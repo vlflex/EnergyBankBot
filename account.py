@@ -63,3 +63,60 @@ class Account:
     # начисление процентов
     def interest_accrual(self):
         self.__sum *= self.rate_coef
+class CreditAccount(Account):
+    # инициализация объекта
+    def __init__(self, sum: float, rate: float, fill: float):
+        Account.__init__(self, sum, rate, fill)
+
+    # плата по кредиту
+    def fill_account(self):
+        self.sum -= self.fill
+
+    # проверка: оплачен ли кредитный счёт
+    def is_paid(self):
+        if (self.sum <= 0):
+            return True
+        else:
+            return False
+
+    # получение мин. суммы пополнения для погашения кредина за months месяцев
+    def get_fill_to_paid(self, months: int):
+
+        try:
+            months = int(months)
+            fill = self.sum / months - 1
+        except ValueError as ve:
+            print(ve)
+        else:
+            tempAccount = copy(self)
+            # создание временного объекта для симуляции ежемесячной платы
+
+            while (not tempAccount.is_paid()):
+                fill += 1
+                tempAccount = copy(self)
+                for i in range(months):
+                    tempAccount.interest_accrual()
+                    tempAccount.fill_account()
+            else:
+                return fill
+
+    # получения кол-ва месяцев для выплаты кредита (при текущем пополнении)
+    def get_months_to_paid(self):
+        months = round(self.sum / self.fill) - 1
+        # создание временного объекта для симуляции ежемесячной платы
+        tempAccount = copy(self)
+        while (not tempAccount.is_paid()):
+            months += 1
+            tempAccount = copy(self)
+
+            for i in range(months):
+                tempAccount.interest_accrual()
+                tempAccount.fill_account()
+        else:
+            return months
+
+    # копирование класса
+    def __copy__(self):
+        prefab = CreditAccount(self.sum, self.rate, self.fill)
+        return prefab
+
