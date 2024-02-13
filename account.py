@@ -63,6 +63,10 @@ class Account:
     # начисление процентов
     def interest_accrual(self):
         self.__sum *= self.rate_coef
+    # стандартное сообщение при выводе
+    def __repr__(self):
+        return f'{__class__.__name__}({self.__sum}, {self.__rate}, {self.__fill})'
+    
 class CreditAccount(Account):
     # инициализация объекта
     def __init__(self, sum: float, rate: float, fill: float):
@@ -119,7 +123,9 @@ class CreditAccount(Account):
     def __copy__(self):
         prefab = CreditAccount(self.sum, self.rate, self.fill)
         return prefab
-
+    # стандартное сообщение при выводе
+    def __repr__(self):
+        return f'{__class__.__name__}({self.sum}, {self.rate}, {self.fill})'
 
 class DepositAccount(Account):
     # инициализация объекта
@@ -192,4 +198,8 @@ class DepositAccount(Account):
                                 self.fill,
                                 self.__goal)
         return prefab
+    
+    # стандартное сообщение при выводе
+    def __repr__(self):
+        return f'{__class__.__name__}({self.sum}, {self.rate}, {self.fill}, {self.goal})'
     
