@@ -120,3 +120,76 @@ class CreditAccount(Account):
         prefab = CreditAccount(self.sum, self.rate, self.fill)
         return prefab
 
+
+class DepositAccount(Account):
+    # инициализация объекта
+    def __init__(self, sum: float, rate: float, fill: float, goal: float):
+        Account.__init__(self, sum, rate, fill)
+
+        try:
+            self.__goal = float(goal)
+        except ValueError as ve:
+            print(ve)
+
+    # свойство цели по вкладу
+    @property
+    def goal(self):
+        return self.__goal
+
+    @goal.setter
+    # обновление цели по вкладу
+    def goal(self, value: float):
+        try:
+            self.__goal = float(value)
+        except ValueError as ve:
+            print(ve)
+
+    # проверка: была ли достигнута цель (goal)
+    def is_achieved(self):
+        if (self.sum >= self.__goal):
+            return True
+        else:
+            return False
+
+    # получение мин. суммы пополнения для достижения цели
+    def get_fill_to_achieve(self, months: int):
+        try:
+            months = int(months)
+            fill = (self.__goal - self.sum) / (months + 2)
+        except ValueError as ve:
+            print(ve)
+        else:
+            # создание временного объекта для симуляции ежемесячной платы
+            tempAccount = copy(self)
+            while (not tempAccount.is_achieved()):
+                fill += 1
+                tempAccount = copy(self)
+                for i in range(months):
+                    tempAccount.interest_accrual()
+                    tempAccount.fill_account()
+            else:
+                return fill
+
+    # получения кол-ва месяцев для достижения цели (при текущем пополнении)
+    def get_months_to_achieve(self):
+        months = int((self.__goal - self.sum) /
+                     (self.fill)) // 2
+        # создание временного объекта для симуляции ежемесячной платы
+        tempAccount = copy(self)
+        while (not tempAccount.is_achieved()):
+            months += 1
+            tempAccount = copy(self)
+            for i in range(months):
+                tempAccount.interest_accrual()
+                tempAccount.fill_account()
+        else:
+            return months
+
+    # копирование класса
+    def __copy__(self):
+        prefab = DepositAccount(self.sum,
+                                self.rate,
+                                self.fill,
+                                self.__goal)
+        return prefab
+    
