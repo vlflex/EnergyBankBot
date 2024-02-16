@@ -4,9 +4,9 @@ from aiogram.filters import Command, CommandObject
 from aiogram.enums import ParseMode
 import asyncio
 from pydantic import SecretStr
-import sentry_sdk
 from string import Template
 from database import DataBase
+from config import config
 import sentry_sdk
 
 sentry_sdk.init(
@@ -19,6 +19,8 @@ sentry_sdk.init(
     # We recommend adjusting this value in production.
     profiles_sample_rate=1.0,
 )
+
+bot: Bot = Bot(config.bot_token.get_secret_value())
 dp: Dispatcher = Dispatcher()
 
 @dp.message(Command('start'))
