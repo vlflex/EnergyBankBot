@@ -3,8 +3,8 @@ class DataBase():
     # инициализация (по пути)
     def __init__(self, src: str):
         self.__src: str = src
-        self.__conn: sql.Connection = None
-        self.__cur: sql.Cursor = None
+        self.__conn: sql.Connection = None # type: ignore
+        self.__cur: sql.Cursor = None # type: ignore
     # вход, подключение к бд
     def __enter__(self):
         self.__conn = sql.connect(self.__src)
