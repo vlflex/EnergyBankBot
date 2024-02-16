@@ -49,4 +49,22 @@ class DataBase():
                             """, 
                             (user.pin, user.email, user.authorized, user.id) # type: ignore
                             )
+    # получение всех id пользователей
+    def get_all_id(self):
+        with DataBase(self.__src) as db:
+            db.cur.execute("""--sql
+                            SELECT id
+                            FROM Clients
+                            """
+                            )
+            return db.cur.fetchall()
+    # получение данных о всех пользователей
+    def get_all_users(self):
+        with DataBase(self.__src) as db:
+            db.cur.execute("""--sql
+                            SELECT *
+                            FROM Clients
+                            """
+                            )
+            return db.cur.fetchall()
 
