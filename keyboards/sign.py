@@ -9,3 +9,12 @@ def get_yes_no_keyboard() -> ReplyKeyboardMarkup:
     markup = builder.as_markup()
     markup.resize_keyboard = True
     return markup
+
+# клавиату с авторизацией и регистрацией
+def get_register_auth_keyboard() -> ReplyKeyboardMarkup:
+    builder = ReplyKeyboardBuilder()
+    builder.button(text = 'Регистрация')
+    builder.button(text = 'Авторизация')
+    markup = builder.as_markup()
+    markup.resize_keyboard = True
+    return markup
