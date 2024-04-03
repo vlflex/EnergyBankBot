@@ -7,7 +7,7 @@ from typing import Tuple
 from logging import DEBUG, INFO
 
 from sys import path
-path.append('D:/Университет/Учебная практика/Bank bot')
+path.append('../') 
 from config import config, LOG_LEVEL
 from modules.logger import Logger
 # настройка логгера
