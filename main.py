@@ -7,26 +7,11 @@ from pydantic import SecretStr
 from string import Template
 from database import DataBase
 from config import config
-import sentry_sdk
 
-sentry_sdk.init(
-    dsn="https://77424977a50d8cd32312624d13bc12f8@o4506209236484096.ingest.sentry.io/4506755171352576",
-    # Set traces_sample_rate to 1.0 to capture 100%
-    # of transactions for performance monitoring.
-    traces_sample_rate=1.0,
-    # Set profiles_sample_rate to 1.0 to profile 100%
-    # of sampled transactions.
-    # We recommend adjusting this value in production.
-    profiles_sample_rate=1.0,
-)
 
 bot: Bot = Bot(config.bot_token.get_secret_value())
 dp: Dispatcher = Dispatcher()
 
-@dp.message(Command('start'))
-async def cmd_start(message: Message):
-    pass
-        
 async def main():
     await dp.start_polling(bot)
 
