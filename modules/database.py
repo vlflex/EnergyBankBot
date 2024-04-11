@@ -7,8 +7,8 @@ from typing import Tuple
 from logging import DEBUG, INFO
 
 from sys import path
-path.append('../') 
-from config import config, LOG_LEVEL
+path.append('D:/Университет/Учебная практика/Bank bot/') 
+from config import config, LOG_LEVEL, get_ciphered, get_unciphered
 from modules.logger import Logger
 # настройка логгера
 local_log = Logger('database', 'D:/Университет/Учебная практика/Bank bot/log/database.log', level=LOG_LEVEL)
@@ -47,7 +47,7 @@ class DataBase():
     def cur(self):
         return self.__cur
     
-    # поиск url
+    # поиск клиента
     @local_log.wrapper(arg_level=DEBUG, res_level=DEBUG)
     def select(self, id: int) -> ClientRow | None:
         self.__cur.execute("""--sql
@@ -58,13 +58,14 @@ class DataBase():
                     id = %s""", (id,))
         result = self.__cur.fetchone()
         if result:
-            return ClientRow(*result) 
+            return ClientRow(*result)
         else:
             local_log.warning(f'Can not select row (id={id}): it has not been found')
     # добавление записи
-    @local_log.wrapper(arg_level=DEBUG, res_level=DEBUG)
-    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float | None = None):
+    # @local_log.wrapper(arg_level=DEBUG, res_level=DEBUG)
+    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0):
         if not self.select(id):
+            pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
             self.__cur.execute("""--sql
                             INSERT INTO 
                                 clients(id, pincode, email, authorized, balance)
@@ -77,8 +78,9 @@ class DataBase():
     
     # обновление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float | None = None):   # type: ignore
+    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0):   # type: ignore
         if self.select(id):
+            pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
             self.__cur.execute("""--sql
                             UPDATE 
                                 clients
@@ -86,9 +88,9 @@ class DataBase():
                                 pincode = %s,
                                 email = %s,
                                 authorized = %s,
-                                balance = %s,
+                                balance = %s
                             WHERE 
-                                url = %s""", (pincode, email, authorized, balance, id))
+                                id = %s""", (pincode, email, authorized, balance, id)) 
             self.__conn.commit()
         else:
             local_log.warning('Can not UPDATE database, row has not found in the database')
@@ -101,7 +103,9 @@ class DataBase():
                 FROM 
                     clients
                 """)
-        return tuple(ClientRow(*row) for row in self.__cur.fetchall()) # type: ignore
+        results = self.__cur.fetchall()
+        assert not(results), "Table is empty"
+        return tuple(ClientRow(*row) for row in results) # type: ignore
     
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.__name})'
