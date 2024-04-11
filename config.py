@@ -23,6 +23,7 @@ LOG_LEVEL = DEBUG
 
 # шифрование данных
 def get_ciphered(data: str):
+    """Ciphere the data"""
     data = data.encode('utf-8') # type: ignore
     # получение ключа
     key = config.code_key.get_secret_value()
@@ -32,6 +33,7 @@ def get_ciphered(data: str):
 
 # дешифрование данных
 def get_unciphered(cipherde_data: str):
+    """Unciphere the data"""
     # получение ключа
     key = config.code_key.get_secret_value()
     # Инициализация объекта Fernet с ключом
