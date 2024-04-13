@@ -18,3 +18,6 @@ def register_auth_kb():
 
 def register_kb():
     return __reply_kb_builder(['Регистрация'])
+
+def auth_kb():
+    return __reply_kb_builder(['Авторизация'])

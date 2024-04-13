@@ -1,7 +1,7 @@
 from aiogram import Dispatcher, Bot
 import asyncio
 from config import config
-from handlers import start, register, auth
+from handlers import start, register, auth, input_validator as iv
 from middlewares.data_getters import GetClient
 
 bot: Bot = Bot(config.bot_token.get_secret_value())
@@ -11,6 +11,7 @@ dp.message.outer_middleware(GetClient())
 async def main():
     dp.include_routers(
             start.router,
+            iv.router,
             auth.router,
             register.router,
             )
