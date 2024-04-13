@@ -9,10 +9,11 @@ from datetime import date
 
 from sys import path
 path.append('D:/Университет/Учебная практика/Bank bot/') 
+import config as conf
 from config import config, LOG_LEVEL, get_ciphered, get_unciphered
 from modules.logger import Logger
 # настройка логгера
-local_log = Logger('database', 'D:/Университет/Учебная практика/Bank bot/log/database.log', level=LOG_LEVEL)
+local_log = Logger('database', f'{conf.PATH}/log/database.log', level=LOG_LEVEL)
 # класс, соответствующий полям записи в БД
 ClientRow = namedtuple('ClientRow', ['id', 'pincode', 'email', 'authorized', 'balance', 'reg_date'])
 
@@ -63,7 +64,7 @@ class DataBase():
         else:
             local_log.warning(f'Can not select row (id={id}): it has not been found')
     # добавление записи
-    # @local_log.wrapper(arg_level=DEBUG, res_level=DEBUG)
+    @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
     def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: date | None = None):
         if not self.select(id):
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
@@ -125,6 +126,7 @@ class DataBase():
     
     # декодирование pin и email из записи клиента
     @staticmethod
+    @local_log.wrapper(DEBUG, DEBUG)
     def uncipher_client(client: ClientRow) -> ClientRow:
         unciph_client = client._replace(
             pincode=get_unciphered(client.pincode) if client.pincode else client.pincode,

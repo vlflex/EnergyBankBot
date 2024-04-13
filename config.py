@@ -19,7 +19,9 @@ class Settings(BaseSettings):
 config = Settings() # type: ignore
 
 # общая настройка уровня логгирования 
-LOG_LEVEL = DEBUG
+LOG_LEVEL =  INFO
+# путь к директории
+PATH = 'D:/Университет/Учебная практика/Bank bot'
 
 # шифрование данных
 def get_ciphered(data: str):
