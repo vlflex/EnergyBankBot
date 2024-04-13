@@ -5,6 +5,7 @@ from psycopg2.errors import Error as PSQLerror
 from collections import namedtuple
 from typing import Tuple
 from logging import DEBUG, INFO
+from datetime import date
 
 from sys import path
 path.append('D:/Университет/Учебная практика/Bank bot/') 
@@ -13,7 +14,7 @@ from modules.logger import Logger
 # настройка логгера
 local_log = Logger('database', 'D:/Университет/Учебная практика/Bank bot/log/database.log', level=LOG_LEVEL)
 # класс, соответствующий полям записи в БД
-ClientRow = namedtuple('ClientRow', ['id', 'pincode', 'email', 'authorized', 'balance'])
+ClientRow = namedtuple('ClientRow', ['id', 'pincode', 'email', 'authorized', 'balance', 'reg_date'])
 
 class DataBase():
     # инициализация (по пути)
@@ -58,29 +59,40 @@ class DataBase():
                     id = %s""", (id,))
         result = self.__cur.fetchone()
         if result:
-            return ClientRow(*result)
+            return self.uncipher_client(ClientRow(*result))
         else:
             local_log.warning(f'Can not select row (id={id}): it has not been found')
     # добавление записи
     # @local_log.wrapper(arg_level=DEBUG, res_level=DEBUG)
-    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0):
+    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: date | None = None):
         if not self.select(id):
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
+            email = get_ciphered(str(email)) if email else email # type: ignore
             self.__cur.execute("""--sql
                             INSERT INTO 
-                                clients(id, pincode, email, authorized, balance)
+                                clients(id, pincode, email, authorized, balance, reg_date)
                             VALUES 
-                                (%s, %s, %s, %s, %s)
-                            """, (id, pincode, email, authorized, balance))
+                                (%s, %s, %s, %s, %s, %s)
+                            """, (id, pincode, email, authorized, balance, reg_date))
             self.__conn.commit()
         else:
             local_log.warning('Can not ADD database row, it has already located in the database')
     
     # обновление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0):   # type: ignore
-        if self.select(id):
+    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: date | None = None):   # type: ignore
+        old_client = self.select(id)
+        if old_client:
+            # если аргумент равен None, то присваивается значение из БД
+            pincode = pincode if pincode else old_client.pincode
+            email = email if email else old_client.email
+            authorized = authorized if authorized else old_client.authorized
+            balance = balance if balance else old_client.balance
+            reg_date = reg_date if reg_date else old_client.reg_date
+            # шифрование пинкода и почты
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
+            email = get_ciphered(str(email)) if email else email # type: ignore
+            
             self.__cur.execute("""--sql
                             UPDATE 
                                 clients
@@ -88,9 +100,10 @@ class DataBase():
                                 pincode = %s,
                                 email = %s,
                                 authorized = %s,
-                                balance = %s
+                                balance = %s,
+                                reg_date = %s
                             WHERE 
-                                id = %s""", (pincode, email, authorized, balance, id)) 
+                                id = %s""", (pincode, email, authorized, balance, reg_date, id)) 
             self.__conn.commit()
         else:
             local_log.warning('Can not UPDATE database, row has not found in the database')
@@ -104,11 +117,20 @@ class DataBase():
                     clients
                 """)
         results = self.__cur.fetchall()
-        assert not(results), "Table is empty"
-        return tuple(ClientRow(*row) for row in results) # type: ignore
+        unchip_clients_tuple = tuple(self.uncipher_client(ClientRow(*row)) for row in results)
+        return unchip_clients_tuple # type: ignore
     
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.__name})'
+    
+    # декодирование pin и email из записи клиента
+    @staticmethod
+    def uncipher_client(client: ClientRow) -> ClientRow:
+        unciph_client = client._replace(
+            pincode=get_unciphered(client.pincode) if client.pincode else client.pincode,
+            email = get_unciphered(client.email) if client.email else client.email
+            )
+        return unciph_client
 
 class DataBaseException(Exception):
     """DataBase base exception
