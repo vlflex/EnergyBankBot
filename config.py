@@ -1,6 +1,7 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
 from pydantic import SecretStr
 from cryptography.fernet import Fernet
+from string import Template
 from logging import DEBUG, INFO
 
 class Settings(BaseSettings):
@@ -22,6 +23,11 @@ config = Settings() # type: ignore
 LOG_LEVEL =  INFO
 # путь к директории
 PATH = 'D:/Университет/Учебная практика/Bank bot'
+# словари с сообщениями
+messages_dict: dict[str, str | Template] = {
+    'greet': Template(f'Здравствуйте, $name! Выберите желаемое действие'),
+    'unauth_greet': Template(f'Здравствуйте, $name! Вы не авторизованы, выберите желаемое действие: '),
+}
 
 # шифрование данных
 def get_ciphered(data: str):

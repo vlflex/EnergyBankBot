@@ -1,18 +1,20 @@
-from aiogram import Dispatcher, Bot, F
-from aiogram.types import Message
-from aiogram.filters import Command, CommandObject
-from aiogram.enums import ParseMode
+from aiogram import Dispatcher, Bot
 import asyncio
-from pydantic import SecretStr
-from string import Template
-from database import DataBase
 from config import config
-
+from handlers import start, register, auth
+from middlewares.data_getters import GetClient
 
 bot: Bot = Bot(config.bot_token.get_secret_value())
 dp: Dispatcher = Dispatcher()
+dp.message.outer_middleware(GetClient())
 
 async def main():
+    dp.include_routers(
+            start.router,
+            auth.router,
+            register.router,
+            )
+    await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
