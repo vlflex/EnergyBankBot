@@ -31,7 +31,7 @@ async def try_login(message: Message, client: ClientRow):
                             ) 
     
 # обработка кнопки "регистрация"
-@router.message(F.text.lower() =='регистрация')
+@router.message(F.text.lower().in_(['регистрация', 'ввести email']))
 async def sign_up(message: Message, client: ClientRow, state: FSMContext):
     main_log.info(f'Client registration\n{client}')
     await message.reply('Введите email')

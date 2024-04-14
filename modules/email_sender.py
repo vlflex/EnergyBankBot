@@ -10,7 +10,7 @@ from sys import path
 path.append('D:/Университет/Учебная практика/Bank bot') 
 import config as conf
 from config import config, PATH
-from logger import Logger
+from modules.logger import Logger
 
 local_log = Logger('email_sender', f'{conf.PATH}/log/email_sender.log', level=conf.LOG_LEVEL)
 
@@ -47,7 +47,7 @@ class EmailSender:
         
     # отправка сообщения
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def send(self, from_field: str, target_email: str, subject: str, text: str):
+    def send(self, from_field: str, target_email: str, subject: str, text: str) -> bool:
         try:
             # создаем письмо
             msg = EmailMessage()
@@ -64,6 +64,9 @@ class EmailSender:
             local_log.exception(f'Sending email error: {error}')
         except Exception as error:
             local_log.exception(f'Unexpected exception\n{error}')
+        else:
+            return True
+        return False
         
     def __repr__(self):
         return f'{self.__class__.__name__}({self.__email}, {"*" * len(self.__pass)}, {self.__server} )'

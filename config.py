@@ -33,6 +33,12 @@ messages_dict: dict[str, str | Template] = {
     'unauth_greet': Template(f'Здравствуйте, $name! Вы не авторизованы, выберите желаемое действие: '),
     'reg_offer': 'Кажется, вы не зарегистрированы, хотите пройти регистрацию?',
     'auth_offer': 'Кажется, вы уже зарегистрированы, хотите войти в аккаунт?',
+    'email_request': 'Введите email для получения кода:',
+    'email_accepted': 'Email принят',
+    'invalid_email': 'Неверный email, попробуйте ещё раз',
+    'code_send': 'На введенный email был отправлен код подтверждения',
+    'code_request': 'Введите полученный код из 6 цифр',
+    'code_error': 'Ошибка отправки кода, попробуйте ещё раз или введите новый email',
 
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
