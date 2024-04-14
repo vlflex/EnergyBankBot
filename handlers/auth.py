@@ -26,11 +26,11 @@ router.message.filter(MagicData(F.client.authorized.is_(False)), MagicData(F.cli
 async def try_sign_up(message: Message, client: ClientRow):
     local_log.info(f'Registered user try to sign up\n{client}')
     main_log.info(f'Attempt unregistered client to sign up\n{client}')
-    await message.answer(messages_dict['auth_offer'], reply_markup=sign.auth_kb()) # type: ignore
+    await message.reply(messages_dict['auth_offer'], reply_markup=sign.auth_kb()) # type: ignore
     
 # обработка кнопки "авторизация"
 @router.message(F.text.lower() =='авторизация')
 async def login(message: Message, client: ClientRow, state: FSMContext):
     main_log.info(f'Client login\n{client}')
-    await message.answer('Введите пин-код')
+    await message.reply('Введите пин-код')
     await state.set_state(InputStates.inputing_pin)

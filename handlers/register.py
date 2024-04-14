@@ -26,7 +26,7 @@ router.message.filter(MagicData(F.client.authorized.is_(False)), MagicData(F.cli
 async def try_login(message: Message, client: ClientRow):
     local_log.info(f'Unregistered user try to log in\n{client}')
     main_log.info(f'Attempt unregistered client to log in\n{client}')
-    await message.answer(messages_dict['reg_offer'], # type: ignore
+    await message.reply(messages_dict['reg_offer'], # type: ignore
                             reply_markup=sign.register_kb()
                             ) 
     
@@ -34,6 +34,6 @@ async def try_login(message: Message, client: ClientRow):
 @router.message(F.text.lower() =='регистрация')
 async def sign_up(message: Message, client: ClientRow, state: FSMContext):
     main_log.info(f'Client registration\n{client}')
-    await message.answer('Введите email')
+    await message.reply('Введите email')
     await state.set_state(InputStates.inputing_email)
     
