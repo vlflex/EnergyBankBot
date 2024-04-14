@@ -24,6 +24,7 @@ router.message.filter(MagicData(F.client.authorized.is_(False)), MagicData(F.cli
 # обработка кнопки "регистрация" (пользователь уже зарегистрирован)
 @router.message(F.text.lower() =='регистрация')
 async def try_sign_up(message: Message, client: ClientRow):
+    local_log.info(f'Registered user try to sign up\n{client}')
     main_log.info(f'Attempt unregistered client to sign up\n{client}')
     await message.answer(messages_dict['auth_offer'], reply_markup=sign.auth_kb()) # type: ignore
     
