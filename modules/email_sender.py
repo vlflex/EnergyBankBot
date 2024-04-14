@@ -55,7 +55,7 @@ class EmailSender:
             msg['Subject'] = subject
             email_name, domain = self.__email.split('@')
             msg['From'] = Address(from_field, email_name, domain)
-            msg['To'] = target_email
+            msg['To'] = target_email.lower()
             # отправка
             self.__server.send_message(msg)
         except MessageError as error:
