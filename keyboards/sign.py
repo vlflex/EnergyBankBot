@@ -21,3 +21,9 @@ def register_kb():
 
 def auth_kb():
     return __reply_kb_builder(['Авторизация'])
+
+def send_kb():
+    return __reply_kb_builder(['Отправить код'])
+
+def send_email_input_kb():
+    return __reply_kb_builder(['Ввести email', 'Отправить код'])
