@@ -16,45 +16,12 @@ import config as conf
 from config import messages_dict, config, create_email_form
 from keyboards import sign
 from handlers.start import InputStates, cmd_start
-from filters import MatchPatternFilter, MatchCodeFilter, TimerFilter
+from filters import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
 
 router = Router()
-
-# фильтр для проверки соответствия строке шаблону
-class MatchPatternFilter(BaseFilter):
-    def __init__(self, pattern: re.Pattern):  
-        self.__pattern = pattern
-    
-    async def __call__(self, message: Message):
-        local_log.debug(f'MatchPatternFilter\tmessage: {self.__pattern}\tpattern:{message.text}')
-        return bool(re.match(self.__pattern, message.text)) # type: ignore
-
-# фильтр для проверки кода
-class MatchCodeFilter(BaseFilter):
-    async def __call__(self, message: Message, state: FSMContext) -> bool:
-        user_data = await state.get_data()
-        user_code: int | None = user_data.get('code', None)
-        local_log.debug(f'MatchCodeFilter\tmessage: {message.text.strip()}\tcode: {user_code}') # type: ignore
-        return message.text.strip() == str(user_code) if user_code else False # type: ignore
-
-# фильтр для проверки завершения таймера
-class TimerFilter(BaseFilter):
-    def __init__(self, dur: int):
-        self.__duration = dur
-    
-    async def __call__(self, message: Message, state: FSMContext) -> Union[bool, Dict[str, Any]]:
-        user_data = await state.get_data()
-        user_time: datetime | None = user_data.get('start_timer', None)
-        if not user_time:
-            local_log.warning(f'Can not find "start_timer" value\nUser data: {user_data}')
-            return False
-        else:
-            diff_sec = (datetime.now() - user_time).seconds
-            local_log.debug(f'EndTimerFilter\t last: {diff_sec}\tstart timer: {user_time}')
-            return {'time_last': self.__duration - diff_sec}
 
 # email введен корректно
 @router.message(F.entities[...].type == MessageEntityType.EMAIL, InputStates.inputing_email)
@@ -169,3 +136,17 @@ async def success_register(message: Message, state: FSMContext, client: ClientRo
 async def invalid_pincode_register(message: Message, client: ClientRow):
     local_log.info(f'Invalid pincode creation:\n"{message.text}"\nby {client}')   # type: ignore
     await message.answer(messages_dict['invalid_pin']) # type: ignore
+    
+# ввод pincode для авторизации (успешно)
+@router.message(InputStates.inputing_pin, MatchPinCodeFilter()) # type: ignore
+async def auth_success(message: Message, state: FSMContext, client: ClientRow):
+    with DataBase(config.db_name.get_secret_value()) as db:
+        db.update(id = client.id, authorized=True)
+    main_log.info(f'Successful authorization by\n {client}')
+    await cmd_start(message, client, state)
+    
+# ввод pincode для авторизации (неудача)
+@router.message(InputStates.inputing_pin, MagicData(F.client.reg_date)) # type: ignore
+async def auth_fail(message: Message, state: FSMContext, client: ClientRow):
+    local_log.info(f'Fail pin code input:\t{message.text} / {client.pincode} by\n {client}')
+    await message.reply(messages_dict['invalid_pin'])  # type: ignore

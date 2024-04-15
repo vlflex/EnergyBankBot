@@ -6,6 +6,7 @@ from datetime import datetime
 from sys import path
 import config as conf
 from modules.logger import Logger
+from modules.database import ClientRow
 import re
 from typing import Union, Any, Dict 
 
@@ -43,3 +44,11 @@ class TimerFilter(BaseFilter):
             diff_sec = (datetime.now() - user_time).seconds
             local_log.debug(f'EndTimerFilter\t last: {diff_sec}\tstart timer: {user_time}')
             return {'time_last': self.__duration - diff_sec}
+        
+# фильтр для проверки соответствия пин-коду
+class MatchPinCodeFilter(BaseFilter):
+    async def __call__(self, message: Message, client: ClientRow):
+        if not client.pincode:
+            return False
+        else:
+            return message.text.strip() == client.pincode   # type: ignore
