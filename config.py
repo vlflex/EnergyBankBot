@@ -64,6 +64,13 @@ def create_email_form(email: str, code: int, registration: bool = True) -> Dict[
     }
     return email_form
 
+buttons_dict: Dict[str, str] = {
+    'reg': 'Регистрация',
+    'auth': 'Авторизация',
+    'send_code': 'Отправить код',
+    'input_email': 'Ввести email',
+}
+
 # шифрование данных
 def get_ciphered(data: str):
     """Ciphere the data"""

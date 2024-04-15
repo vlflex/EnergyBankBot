@@ -13,7 +13,7 @@ from modules.logger import Logger
 from modules.database import ClientRow
 from modules.email_sender import EmailSender
 import config as conf
-from config import messages_dict, config, create_email_form
+from config import messages_dict, config, create_email_form, buttons_dict
 from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from filters import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter
@@ -44,7 +44,7 @@ async def invalid_email(message: Message, client: ClientRow):
     await message.reply(messages_dict['invalid_email'])    # type: ignore
     
 # отправка кода
-@router.message(F.text.lower() == 'отправить код', InputStates.sending_code)
+@router.message(F.text.lower() ==  buttons_dict['send_code'].lower(), InputStates.sending_code)
 async def code_sender(message: Message, state: FSMContext, client: ClientRow):
     # попытка отправки кода на введенный email
     user_data = await state.get_data()
