@@ -1,8 +1,12 @@
 from aiogram import Dispatcher, Bot
 import asyncio
 from config import config
+import config as conf
 from handlers import start, register, auth, input_validator as iv
 from middlewares.data_getters import GetClient
+from modules.logger import Logger
+
+main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
 
 bot: Bot = Bot(config.bot_token.get_secret_value())
 dp: Dispatcher = Dispatcher()
@@ -19,6 +23,8 @@ async def main():
     await dp.start_polling(bot)
 
 if __name__ == '__main__':
-    asyncio.run(main())
-
+    try:
+        asyncio.run(main())
+    except Exception as error:
+        main_log.exception(f'Main exception:\n{error}')
 
