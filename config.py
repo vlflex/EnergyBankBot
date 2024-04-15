@@ -27,6 +27,10 @@ config = Settings() # type: ignore
 LOG_LEVEL =  INFO
 # путь к директории
 PATH = 'D:/Университет/Учебная практика/Bank bot'
+# таймер между отправками email code (sec)
+CODE_COOLDOWN = 180
+# число попыток до блокировки
+CODE_ATTEMPTS = 5
 # словари с сообщениями
 messages_dict: dict[str, str | Template] = {
     'greet': Template(f'Здравствуйте, $name! Выберите желаемое действие'),
@@ -46,6 +50,7 @@ messages_dict: dict[str, str | Template] = {
     'code_error': 'Ошибка отправки кода, попробуйте ещё раз или введите новый email',
     'code_accepted': 'Код подтверждения принят',
     'invalid_code': 'Неверный код, попробуйте ещё раз',
+    'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>')
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
