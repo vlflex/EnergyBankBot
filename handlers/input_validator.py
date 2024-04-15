@@ -2,9 +2,10 @@ from aiogram import Router, F
 from aiogram.filters import StateFilter, MagicData, BaseFilter
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
-from aiogram.enums import MessageEntityType
+from aiogram.enums import MessageEntityType, ParseMode
 
-from datetime import date
+from typing import Union, Dict, Any
+from datetime import date, datetime
 from random import randint
 import re
 from sys import path
@@ -29,6 +30,7 @@ class MatchPatternFilter(BaseFilter):
         self.__pattern = pattern
     
     async def __call__(self, message: Message):
+        local_log.debug(f'MatchPatternFilter\tmessage: {self.__pattern}\tpattern:{message.text}')
         return bool(re.match(self.__pattern, message.text)) # type: ignore
 
 # фильтр для проверки кода
@@ -36,7 +38,24 @@ class MatchCodeFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext) -> bool:
         user_data = await state.get_data()
         user_code: int | None = user_data.get('code', None)
+        local_log.debug(f'MatchCodeFilter\tmessage: {message.text.strip()}\tcode: {user_code}') # type: ignore
         return message.text.strip() == str(user_code) if user_code else False # type: ignore
+
+# фильтр для проверки завершения таймера
+class TimerFilter(BaseFilter):
+    def __init__(self, dur: int):
+        self.__duration = dur
+    
+    async def __call__(self, message: Message, state: FSMContext) -> Union[bool, Dict[str, Any]]:
+        user_data = await state.get_data()
+        user_time: datetime | None = user_data.get('start_timer', None)
+        if not user_time:
+            local_log.warning(f'Can not find "start_timer" value\nUser data: {user_data}')
+            return False
+        else:
+            diff_sec = (datetime.now() - user_time).seconds
+            local_log.debug(f'EndTimerFilter\t last: {diff_sec}\tstart timer: {user_time}')
+            return {'time_last': self.__duration - diff_sec}
 
 # email введен корректно
 @router.message(F.entities[...].type == MessageEntityType.EMAIL, InputStates.inputing_email)
@@ -45,7 +64,7 @@ async def valid_email(message: Message, state: FSMContext, client: ClientRow):
     # извлечение email
     for item in message.entities: # type: ignore
         if item.type == MessageEntityType.EMAIL:
-            user_email = item.extract_from(message.text) # type: ignore
+            user_email = item.extract_from(message.text).strip() # type: ignore
             await state.update_data(email = user_email)
             break
     main_log.info(f'Correct email input{user_email}by\n{client}')   # type: ignore
@@ -81,6 +100,8 @@ async def code_sender(message: Message, state: FSMContext, client: ClientRow):
         await message.reply(messages_dict['code_send']) # type: ignore
         await message.answer(messages_dict['code_request'])  # type: ignore
         await state.set_state(InputStates.inputing_code) # type: ignore
+        # сохранения отправки сообщения для таймера
+        await state.update_data(start_timer=datetime.now())
     # ошибка отправки
     else:
         local_log.warning(f'Failed email sending code {user_data["email"]} failed\n{client}')
@@ -98,15 +119,33 @@ async def valid_code(message: Message, state: FSMContext, client: ClientRow):
 @router.message(InputStates.inputing_code)
 async def invlid_code(message: Message, state: FSMContext, client: ClientRow):
     user_data = await state.get_data()
-    local_log.info(f'Invalid code input:\n"{message.text}/{user_data["code"]}"\nby {client}')   # type: ignore
+    attempts = user_data.get('code_attempts', 0)
+    await state.update_data(code_attempts=attempts+1)
+    local_log.info(f'Invalid code input ({attempts+1}/{conf.CODE_ATTEMPTS}):\n"{message.text} / {user_data["code"]}"\nby {client}')   # type: ignore
     await message.answer(messages_dict['invalid_code']) # type: ignore
+    # превышено число попыток 
+    if attempts+2>= conf.CODE_ATTEMPTS:
+        await state.set_state(InputStates.waiting_send_code)
+    
+# ожидание повторной отправки кода
+@router.message(InputStates.waiting_send_code, TimerFilter(conf.CODE_COOLDOWN))
+async def timer(message: Message, client: ClientRow, state: FSMContext, time_last: int):
+    local_log.info(f'Waiting for sending code, last: {time_last}\n{client}')
+    if time_last > 0:
+        await message.reply(messages_dict['multiple_invalid_code'].substitute(time=time_last),  # type: ignore
+                            reply_markup=sign.send_kb(),
+                            parse_mode=ParseMode.HTML,
+                            ) # type: ignore
+    else:
+        await state.set_state(InputStates.sending_code)
+        await code_sender(message=message, client=client, state=state)
     
 # ввод pincode для регистрации (успешно)
 @router.message(InputStates.inputing_pin, MagicData(F.client.reg_date.is_(None)), MatchPatternFilter(r'\b\d{4}\b')) # type: ignore
 async def success_register(message: Message, state: FSMContext, client: ClientRow):
     pin = int(message.text) # type: ignore
     user_data = await state.get_data()
-    # обновление данных пользователя
+    # обновление данных пользователя 
     row_updated: int = 0
     with DataBase(config.db_name.get_secret_value()) as db:
         db.update(
