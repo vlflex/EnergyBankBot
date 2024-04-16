@@ -53,7 +53,9 @@ messages_dict: Dict[str, str | Template] = {
     'restore_success': 'Вы успешно восстановили pin-code. Используйте /start для входа',
     'restore_fail': 'Ошибка сброса pin-кода, кажется что-то пошло не так:()',
     'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>'),
-    'multiple_invalid_pin': Template(f'Вы ввели pin-код неверно {CODE_ATTEMPTS} раз.\nВы можете восстановить pin-code, через email (будет отправлен код подтверждения).\nЛибо попробуйте ввести код снова через: <b>$time</b>')
+    'multiple_invalid_pin': Template(f'Вы ввели pin-код неверно {CODE_ATTEMPTS} раз.\nВы можете восстановить pin-code, через email (будет отправлен код подтверждения).\nЛибо попробуйте ввести код снова через: <b>$time</b>'),
+    'casino_greet':'Велкам ту казик',
+    'casino_nomoney':'А денег хватит?',
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
@@ -74,6 +76,28 @@ buttons_dict: Dict[str, str] = {
     'input_email': 'Ввести email',
     'input_pin': 'Ввести pin-код',
     'email_restore': 'Восстановить через email',
+    'casino_slot': 'Крутка🎰',
+    'casino_dice': 'Кость🎲',
+    'casino_bet': 'Ставка💰',
+}
+
+stickers_dict: Dict[str, str] = {
+    'want_money': 'CAACAgIAAxkBAAIDmGYfAQGV7JgSKjSILbZZSr2peZsMAAITAAMhjG8wHCJ69Mnh5AY0BA',
+    'cat_ask': 'CAACAgEAAxkBAAIDm2YfAVDdk95-n-67N9N-u7GOmAL0AAIVAwACDtepRzU9ZbtrpXoXNAQ',
+    'only_money': 'CAACAgIAAxkBAAIDnWYfAXt3Y0YwBgLmyxVLoU-05wy5AAJfEgACjHIpS8kqH_1IJSH5NAQ',
+
+}
+photos_dict: Dict[str, str] = {
+    'e_mouth': 'AgACAgIAAxkBAAIDJWYe9aBtToHKzmDrpBrjA8LW-FmcAALk2DEbN6f4SLPNh74lqAoAAQEAAwIAA3gAAzQE',
+    'pig': 'AgACAgIAAxkBAAIDJ2Ye9g8or7RRzJgq3yUYYKgghGGxAALn2DEbN6f4SPccPtJdPSzqAQADAgADeQADNAQ',
+    'pigs': 'AgACAgIAAxkBAAIDKWYe9i7lX0L0heUxPYnpqok1uajmAALo2DEbN6f4SEOJ5bSje5P5AQADAgADeQADNAQ',
+    'python': 'AgACAgIAAxkBAAIDK2Ye9ngaHgYolx40mW8cQp5AxzVqAALp2DEbN6f4SJcN8AlW6JP_AQADAgADbQADNAQ',
+    'bad': 'AgACAgIAAxkBAAIDLWYe9oc9z3R-kTWHkkOEosQKeGo2AALq2DEbN6f4SPhv4qIj1wVXAQADAgADeQADNAQ',
+    'anime': 'AgACAgIAAxkBAAIDL2Ye9u3qA7-VWDQs0ucCV6N7qoVIAALr2DEbN6f4SDQWbfgMNMc0AQADAgADeQADNAQ',
+    'think': 'AgACAgIAAxkBAAIDMWYe9wpOmiQba8qjtww_uxon0CC3AALs2DEbN6f4SKz_pwrquqJDAQADAgADbQADNAQ',
+    'china': 'AgACAgIAAxkBAAIDWGYe99TmZpBQYx99Cfypw2jM1au-AALz1TEb5Xz4SJn_PXfRxf78AQADAgADeQADNAQ',
+    'f_nv': 'AgACAgIAAxkBAAIDWmYe-FGLVod9nS6oPCV1ZSJfe9ZkAALt2DEbN6f4SCYh0AhDU0NQAQADAgADeQADNAQ',
+    
 }
 
 # шифрование данных
