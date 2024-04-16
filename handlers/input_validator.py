@@ -17,7 +17,7 @@ from config import messages_dict, config, create_email_form, buttons_dict
 from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from handlers.auth import login
-from filters import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter
+from filters import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
@@ -133,9 +133,33 @@ async def success_register(message: Message, state: FSMContext, client: ClientRo
         main_log.warning(f'Fail register, created pin: {message.text}\nby {client}')
         await message.answer(messages_dict['reg_fail']) # type: ignore
         await message.answer(messages_dict['pin_request'])  # type: ignore
-        
+    
+# успешный ввод нового pin и его сброс
+@router.message(InputStates.inputing_pin, MagicData(F.client.reg_date), RestoringPinFilter(), MatchPatternFilter(r'\b\d{4}\b')) # type: ignore
+async def pincode_reset(message: Message, state: FSMContext, client: ClientRow):
+    pin = int(message.text) # type: ignore
+    # обновление данных пользователя 
+    row_updated: int = 0
+    with DataBase(config.db_name.get_secret_value()) as db:
+        db.update(
+                    id = message.from_user.id, # type: ignore
+                    pincode=pin,
+                    email=client.email,
+                )
+        row_updated = db.cur.rowcount
+    if row_updated:
+        main_log.info(f'Success pin restore, created pin: {message.text}\nby {client}')
+        await message.answer(messages_dict['restore_success']) # type: ignore
+        await state.clear()
+    else:
+        main_log.warning(f'Fail pin restore, created pin: {message.text}\nby {client}')
+        await message.answer(messages_dict['restore_fail']) # type: ignore
+        await message.answer(messages_dict['pin_request'])  # type: ignore
+
+
 # ввод pincode для регистрации (неудача)
-@router.message(InputStates.inputing_pin, MagicData(F.client.reg_date.is_(None)))
+@router.message(InputStates.inputing_pin, RestoringPinFilter()) # type: ignore
+@router.message(InputStates.inputing_pin, MagicData(F.client.reg_date.is_(None))) # type: ignore
 async def invalid_pincode_register(message: Message, client: ClientRow):
     local_log.info(f'Invalid pincode creation:\n"{message.text}"\nby {client}')   # type: ignore
     await message.answer(messages_dict['invalid_pin']) # type: ignore
@@ -147,6 +171,12 @@ async def auth_success(message: Message, state: FSMContext, client: ClientRow):
         db.update(id = client.id, authorized=True)
     main_log.info(f'Successful authorization by\n {client}')
     await cmd_start(message, client, state)
+    
+# восстановление pin через email
+@router.message(InputStates.waiting_input_pin, MagicData(F.client.reg_date), F.text == buttons_dict['email_restore'])
+async def email_restore_pin(message: Message, state: FSMContext, client: ClientRow):
+    await state.update_data(restore_pin=True)
+    await code_sender(message=message, client=client, state=state)
     
 # ввод pincode для авторизации (неудача)
 @router.message(InputStates.inputing_pin, MagicData(F.client.reg_date)) # type: ignore
@@ -175,4 +205,3 @@ async def pin_timer(message: Message, client: ClientRow, state: FSMContext, time
         await state.update_data(pin_attempts=0)
         await state.set_state(InputStates.inputing_pin)
         await login(message=message, client=client, state=state)
-

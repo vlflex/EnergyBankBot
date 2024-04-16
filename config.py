@@ -50,6 +50,8 @@ messages_dict: Dict[str, str | Template] = {
     'code_error': 'Ошибка отправки кода, попробуйте ещё раз или введите новый email',
     'code_accepted': 'Код подтверждения принят',
     'invalid_code': 'Неверный код, попробуйте ещё раз',
+    'restore_success': 'Вы успешно восстановили pin-code. Используйте /start для входа',
+    'restore_fail': 'Ошибка сброса pin-кода, кажется что-то пошло не так:()',
     'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>'),
     'multiple_invalid_pin': Template(f'Вы ввели pin-код неверно {CODE_ATTEMPTS} раз.\nВы можете восстановить pin-code, через email (будет отправлен код подтверждения).\nЛибо попробуйте ввести код снова через: <b>$time</b>')
 }
