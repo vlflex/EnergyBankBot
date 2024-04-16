@@ -24,6 +24,7 @@ class InputStates(StatesGroup):
     inputing_code = State()
     sending_code = State()
     waiting_send_code = State()
+    waiting_input_pin = State()
 
 # обработка /start для авторизованных пользователей
 @router.message(Command('start'), MagicData(F.client.authorized.is_(True)))

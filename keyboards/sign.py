@@ -29,3 +29,5 @@ def send_kb():
 def send_email_input_kb():
     return __reply_kb_builder([buttons_dict['input_email'], buttons_dict['send_code']])
 
+def email_restore_input_pin():
+    return __reply_kb_builder([buttons_dict['input_pin'], buttons_dict['email_restore']], button_in_row=1)

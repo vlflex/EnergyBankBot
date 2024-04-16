@@ -51,6 +51,7 @@ messages_dict: Dict[str, str | Template] = {
     'code_accepted': 'Код подтверждения принят',
     'invalid_code': 'Неверный код, попробуйте ещё раз',
     'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>'),
+    'multiple_invalid_pin': Template(f'Вы ввели pin-код неверно {CODE_ATTEMPTS} раз.\nВы можете восстановить pin-code, через email (будет отправлен код подтверждения).\nЛибо попробуйте ввести код снова через: <b>$time</b>')
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
@@ -69,6 +70,8 @@ buttons_dict: Dict[str, str] = {
     'auth': 'Авторизация',
     'send_code': 'Отправить код',
     'input_email': 'Ввести email',
+    'input_pin': 'Ввести pin-код',
+    'email_restore': 'Восстановить через email',
 }
 
 # шифрование данных

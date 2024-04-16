@@ -151,5 +151,28 @@ async def auth_success(message: Message, state: FSMContext, client: ClientRow):
 # ввод pincode для авторизации (неудача)
 @router.message(InputStates.inputing_pin, MagicData(F.client.reg_date)) # type: ignore
 async def auth_fail(message: Message, state: FSMContext, client: ClientRow):
-    local_log.info(f'Fail pin code input:\t{message.text} / {client.pincode} by\n {client}')
-    await message.reply(messages_dict['invalid_pin'])  # type: ignore
+    user_data = await state.get_data()
+    attempts = user_data.get('pin_attempts', 0)
+    await state.update_data(pin_attempts=attempts+1)
+    local_log.info(f'Invalid pin-code input ({attempts+1}/{conf.CODE_ATTEMPTS}):\n"{message.text} / {client.pincode}"\nby {client}')   # type: ignore
+    await message.answer(messages_dict['invalid_pin']) # type: ignore
+    # превышено число попыток 
+    if attempts+2>= conf.CODE_ATTEMPTS:
+        await state.update_data(start_timer=datetime.now())
+        await state.set_state(InputStates.waiting_input_pin)
+
+# ожидание повторной отправки кода
+@router.message(InputStates.waiting_input_pin, TimerFilter(conf.CODE_COOLDOWN))
+async def pin_timer(message: Message, client: ClientRow, state: FSMContext, time_last: int):
+    local_log.info(f'Waiting for pin input, last: {time_last}\n{client}')
+    if time_last > 0:
+        await message.reply(messages_dict['multiple_invalid_pin'].substitute(time=time_last),  # type: ignore
+                            reply_markup=sign.email_restore_input_pin(),
+                            parse_mode=ParseMode.HTML,
+                            )
+    else:
+        local_log.info(f'Timer is over: {time_last}')
+        await state.update_data(pin_attempts=0)
+        await state.set_state(InputStates.inputing_pin)
+        await login(message=message, client=client, state=state)
+
