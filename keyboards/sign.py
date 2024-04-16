@@ -27,4 +27,5 @@ def send_kb():
     return __reply_kb_builder([buttons_dict['send_code']])
 
 def send_email_input_kb():
-    return __reply_kb_builder(['Ввести email', 'Отправить код'])
+    return __reply_kb_builder([buttons_dict['input_email'], buttons_dict['send_code']])
+

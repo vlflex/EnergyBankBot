@@ -50,7 +50,7 @@ messages_dict: Dict[str, str | Template] = {
     'code_error': 'Ошибка отправки кода, попробуйте ещё раз или введите новый email',
     'code_accepted': 'Код подтверждения принят',
     'invalid_code': 'Неверный код, попробуйте ещё раз',
-    'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>')
+    'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>'),
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:

@@ -16,6 +16,7 @@ import config as conf
 from config import messages_dict, config, create_email_form, buttons_dict
 from keyboards import sign
 from handlers.start import InputStates, cmd_start
+from handlers.auth import login
 from filters import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
@@ -31,7 +32,7 @@ async def valid_email(message: Message, state: FSMContext, client: ClientRow):
     for item in message.entities: # type: ignore
         if item.type == MessageEntityType.EMAIL:
             user_email = item.extract_from(message.text).strip() # type: ignore
-            await state.update_data(email = user_email)
+            await state.update_data(email = user_email.lower())
             break
     main_log.info(f'Correct email input{user_email}by\n{client}')   # type: ignore
     await message.reply(messages_dict['email_accepted'], reply_markup=sign.send_kb())  # type: ignore
@@ -52,7 +53,7 @@ async def code_sender(message: Message, state: FSMContext, client: ClientRow):
     await state.update_data(code = personal_code)
     # генерация содержимого email
     email_to_user = create_email_form(
-        email=user_data['email'],
+        email=user_data['email'] if not client.email else client.email,
         code=personal_code,
         # reg_date == None => это регистрация
         registration=not(bool(client.reg_date))
@@ -62,7 +63,7 @@ async def code_sender(message: Message, state: FSMContext, client: ClientRow):
         email_success = es.send(**email_to_user)
     # код успешно отправлен
     if email_success:
-        main_log.info(f'Email code ({personal_code}) has been sent successfully to {user_data["email"]}\n{client}')
+        main_log.info(f'Email code ({personal_code}) has been sent successfully to {user_data["email"] if not client.email else client.email}\n{client}')
         await message.reply(messages_dict['code_send']) # type: ignore
         await message.answer(messages_dict['code_request'])  # type: ignore
         await state.set_state(InputStates.inputing_code) # type: ignore
@@ -103,9 +104,11 @@ async def timer(message: Message, client: ClientRow, state: FSMContext, time_las
                             parse_mode=ParseMode.HTML,
                             ) # type: ignore
     else:
+        local_log.info(f'Timer is over: {time_last}')
+        await state.update_data(code_attempts=0)
         await state.set_state(InputStates.sending_code)
         await code_sender(message=message, client=client, state=state)
-    
+
 # ввод pincode для регистрации (успешно)
 @router.message(InputStates.inputing_pin, MagicData(F.client.reg_date.is_(None)), MatchPatternFilter(r'\b\d{4}\b')) # type: ignore
 async def success_register(message: Message, state: FSMContext, client: ClientRow):
