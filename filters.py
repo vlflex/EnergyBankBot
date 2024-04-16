@@ -52,3 +52,10 @@ class MatchPinCodeFilter(BaseFilter):
             return False
         else:
             return message.text.strip() == client.pincode   # type: ignore
+        
+# фильтр проверяющий: восстанавливает ли пользователь pincode
+class RestoringPinFilter(BaseFilter):
+    async def __call__(self, message: Message, state: FSMContext):
+        user_data = await state.get_data()
+        restore_flag = user_data.get('restore_pin', False)
+        return bool(restore_flag)
