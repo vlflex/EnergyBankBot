@@ -17,7 +17,7 @@ from config import messages_dict, config, create_email_form, buttons_dict
 from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from handlers.auth import login
-from filters import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter
+from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
