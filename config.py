@@ -56,6 +56,11 @@ messages_dict: Dict[str, str | Template] = {
     'multiple_invalid_pin': Template(f'Вы ввели pin-код неверно {CODE_ATTEMPTS} раз.\nВы можете восстановить pin-code, через email (будет отправлен код подтверждения).\nЛибо попробуйте ввести код снова через: <b>$time</b>'),
     'casino_greet':'Велкам ту казик',
     'casino_nomoney':'А денег хватит?',
+    'casino_input_bet':'Введите сумму ставки',
+    'casino_no_bet':'Делаем ставки',
+    'casino_bet_accepted': 'Ставка принята',
+    'casino_noenough': Template('Недостаточно средств\nСтавка: <b>$bet</b>\nБаланс: <b>$balance</b>'),
+    'casino_invalid_bet': 'Ошибка ввода ставки, введите число',
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
