@@ -21,6 +21,7 @@ router = Router()
 router.message.filter(MagicData(F.client.authorized.is_(True)))
 
 # отображение баланса
+@router.message(Command('balance'))
 @router.message(F.text.lower() == buttons_dict['balance'].lower())
 async def balance_info(message: Message, client: ClientRow):
     main_log.info(f'Client ask balance\n{client}')
