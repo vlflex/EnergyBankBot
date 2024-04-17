@@ -7,7 +7,7 @@ from keyboards.sign import reply_kb_builder
 # клавиатура для главного меню
 def main_menu_kb():
     return reply_kb_builder([
-        buttons_dict['transfer'],
+        buttons_dict['pay'],
         buttons_dict['balance'],
         buttons_dict['history'],
         buttons_dict['calculator'],

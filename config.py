@@ -3,7 +3,7 @@ from pydantic import SecretStr
 from cryptography.fernet import Fernet
 from string import Template
 from logging import DEBUG, INFO
-from typing import Dict
+from typing import Dict, List
 
 class Settings(BaseSettings):
     bot_token: SecretStr
@@ -55,6 +55,7 @@ messages_dict: Dict[str, str | Template] = {
     'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>'),
     'multiple_invalid_pin': Template(f'Вы ввели pin-код неверно {CODE_ATTEMPTS} раз.\nВы можете восстановить pin-code, через email (будет отправлен код подтверждения).\nЛибо попробуйте ввести код снова через: <b>$time</b>'),
     'menu_balance': Template(f'Ваш баланс: <b>$balance₽</b>'),  # type: ignore
+    'command_refuse': 'Вы не можете использовать эту комманду до авторизации. Используйте /start',
     'casino_greet':'Велкам ту казик',
     'casino_nomoney':'А денег хватит?',
     'casino_input_bet':'Введите сумму ставки',
@@ -87,7 +88,7 @@ buttons_dict: Dict[str, str] = {
     'input_email': 'Ввести email',
     'input_pin': 'Ввести pin-код',
     'email_restore': 'Восстановить через email',
-    'transfer': 'Перевод💱',
+    'pay': 'Перевод💱',
     'balance': 'Баланс💰',
     'history': 'История💸',
     'currency': 'Валюты💲',
@@ -118,11 +119,22 @@ photos_dict: Dict[str, str] = {
     'f_nv': 'AgACAgIAAxkBAAIDWmYe-FGLVod9nS6oPCV1ZSJfe9ZkAALt2DEbN6f4SCYh0AhDU0NQAQADAgADeQADNAQ',
 }
 
+commands_list: List[str] = [
+    "balance",
+    "history",
+    "pay",  
+    "settings",
+    "currency",
+    "calculator",
+]
+
 try_photos: Dict[str, str] = {
     'stonks':'AgACAgIAAxkBAAIE52YfqQPk6iDnlymVmEGwFIvEsab1AAKU3jEbWTMBSXsUdlzlbJerAQADAgADeAADNAQ',
     'not_stonks':'AgACAgIAAxkBAAIE6WYfqUW_WoNXCFSgPisHygFYorvBAAKV3jEbWTMBST3cdBD9iTXGAQADAgADeAADNAQ',
     'ultra_stonks': 'AgACAgIAAxkBAAIE62YfqXRRs8IzeO0afZa-SQ2vK1DiAAKW3jEbWTMBSfk8hTPbYkCrAQADAgADbQADNAQ',
 }
+
+
 
 # шифрование данных
 def get_ciphered(data: str):
