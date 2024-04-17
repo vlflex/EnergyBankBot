@@ -3,7 +3,7 @@ from pydantic import SecretStr
 from cryptography.fernet import Fernet
 from string import Template
 from logging import DEBUG, INFO
-from typing import Dict
+from typing import Dict, List
 
 class Settings(BaseSettings):
     bot_token: SecretStr
@@ -55,6 +55,7 @@ messages_dict: Dict[str, str | Template] = {
     'multiple_invalid_code': Template(f'Вы ввели код неверно {CODE_ATTEMPTS} раз. Начните заново с /start. Или попробуйте ввести код снова через: <b>$time</b>'),
     'multiple_invalid_pin': Template(f'Вы ввели pin-код неверно {CODE_ATTEMPTS} раз.\nВы можете восстановить pin-code, через email (будет отправлен код подтверждения).\nЛибо попробуйте ввести код снова через: <b>$time</b>'),
     'menu_balance': Template(f'Ваш баланс: <b>$balance₽</b>'),  # type: ignore
+    'command_refuse': 'Вы не можете использовать эту комманду до авторизации. Используйте /start',
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
@@ -75,7 +76,7 @@ buttons_dict: Dict[str, str] = {
     'input_email': 'Ввести email',
     'input_pin': 'Ввести pin-код',
     'email_restore': 'Восстановить через email',
-    'transfer': 'Перевод💱',
+    'pay': 'Перевод💱',
     'balance': 'Баланс💰',
     'history': 'История💸',
     'currency': 'Валюты💲',
@@ -84,6 +85,14 @@ buttons_dict: Dict[str, str] = {
     'menu': 'Меню🧩',
 }
 
+commands_list: List[str] = [
+    "balance",
+    "history",
+    "pay",  
+    "settings",
+    "currency",
+    "calculator",
+]
 # шифрование данных
 def get_ciphered(data: str):
     """Ciphere the data"""
