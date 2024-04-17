@@ -48,6 +48,18 @@ async def cmd_casion(message: Message, state: FSMContext, client: ClientRow):
     await message.answer_photo(photo=choice(tuple(photos_dict.values()))) # type: ignore
     await state.set_state(CasinoStates.base_state)
     
+# бросить кость
+@router.message(F.text.lower() == buttons_dict['casino_dice'].lower(), CasinoStates.base_state, HaveBetFilter(), HaveDiceNumFilter())
+async def play_dice(message: Message, state: FSMContext, client: ClientRow):
+    dice_msg = await message.answer_dice(DiceEmoji.DICE, reply_markup=ckb.try_throw_bet_num())
+    
+    dice_score = dice_msg.dice.value    # type: ignore
+    player_data = await state.get_data()
+    # проверка значения
+    if dice_score == player_data['dice_num']:
+        await win(message, state, client, dice = True)
+    else:
+        await lose(message, state, client)
 
 # выбор числа для броска кости
 @router.message(F.text.lower().lower() == buttons_dict['casino_dice_choice'].lower(), CasinoStates.base_state, HaveBetFilter(), HaveDiceNumFilter())
@@ -109,6 +121,40 @@ async def invalid_bet_input(message: Message, state: FSMContext, client: ClientR
 # попытка играть без ставки
 @router.message(F.text.lower().in_([buttons_dict['casino_dice'].lower(), buttons_dict['casino_slot'].lower()]), CasinoStates.base_state)
 async def no_bet(message: Message, client: ClientRow):
-    local_log.info(f'Try to play without bet: {message.text}\n{client}')
     await message.reply(messages_dict['casino_no_bet'], reply_markup=ckb.set_bet_kb()) # type: ignore
     
+# выигрыш
+async def win(message: Message, state: FSMContext, client: ClientRow, dice: bool):
+    user_data = await state.get_data()
+    bet = user_data['bet']
+    win_amount: int
+    if dice:
+        win_amount = bet * DICE_COEF
+        await message.answer_photo(photo=try_photos['stonks'])
+        await message.answer(messages_dict['casino_win'].substitute(win=win_amount, bet = bet)) # type: ignore
+    else:
+        win_amount = bet * SLOT_COEF
+        for _ in range(3):
+            await message.answer_photo(photo=try_photos['ultra_stonks'])
+        await message.answer(messages_dict['casino_win'].substitute(win=win_amount, bet = bet)) # type: ignore
+    # обновление баланса
+    with DataBase(config.db_name.get_secret_value()) as db:
+        db.update(
+            id = client.id,
+            balance=client.balance+win_amount
+        )
+    local_log.info(f'Player won (dice={dice}) {win_amount} with state {bet}\n{client}')
+
+# проигрыш
+async def lose(message: Message, state: FSMContext, client: ClientRow):
+    user_data = await state.get_data()
+    bet = user_data['bet']
+    await message.answer_photo(photo=try_photos['not_stonks'])
+    await message.answer(messages_dict['casino_lose'].substitute(bet = bet)) # type: ignore
+    # обновление баланса
+    with DataBase(config.db_name.get_secret_value()) as db:
+        db.update(
+            id = client.id,
+            balance=client.balance-bet
+        )
+    local_log.info(f'Player lose {bet}\n{client}')
