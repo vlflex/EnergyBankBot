@@ -16,6 +16,11 @@ def set_bet_kb():
 def try_throw_bet_num():
     return reply_kb_builder([buttons_dict['casino_dice'], buttons_dict['casino_bet'], buttons_dict['casino_dice_choice']], button_in_row=[1, 2])
     
-
+# выбрать dice / чет или нечет
+def choose_dice():
+    numbers = list(range(1,7))
+    all_btns = [str(num) for num in numbers]
+    all_btns.extend(['Чет', 'Нечет'])
+    return reply_kb_builder(all_btns, button_in_row=[3, 3, 2]) # type: ignore
 
 

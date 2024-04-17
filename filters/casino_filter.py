@@ -39,13 +39,17 @@ class HaveDiceNumFilter(BaseFilter):
         return bool(bet)
         
 # проверка ввод значения dice
+@local_log.wrapper()
 class  CorrectDiceChoice(BaseFilter):
     async def __call__(self, message: Message):
         dice_choice: int
         try:
             dice_choice = int(message.text) # type: ignore
         except Exception:
-            return False
+            if message.text.strip().lower() == 'чет' or  message.text.strip().lower() == 'нечет':   # type: ignore
+                return True
+            else:
+                return False
         else:
             return 1 <= dice_choice <= 6
             

@@ -24,8 +24,10 @@ local_log = Logger('casino', f'{conf.PATH}/log/casino.log', level=conf.LOG_LEVEL
 router = Router()
 # лишь для авторизованных
 router.message.filter(MagicData(F.client.authorized.is_(True)))
-# коэффициент для dice
-DICE_COEF = 6
+# коэффициент для dice (одно число)
+DICE_ONE_COEF = 10
+# коэффициент для dice (чет/нечет)
+DICE_DIV_COEF = 2
 # коэффициент для slots
 class CasinoStates(StatesGroup):
     base_state = State()
@@ -55,8 +57,18 @@ async def play_dice(message: Message, state: FSMContext, client: ClientRow):
     
     dice_score = dice_msg.dice.value    # type: ignore
     player_data = await state.get_data()
-    # проверка значения
-    if dice_score == player_data['dice_num']:
+    dice_choice = player_data['dice_num']
+    # проверка значений
+    # выбрано чет/нечет
+    if isinstance(dice_choice, str):
+        # определение остатка в соответсвии с выбором
+        dice_rem = 0  if dice_choice.lower() == 'чет' else 1
+        if dice_score % 2 == dice_rem:
+            await win(message, state, client, dice = True)
+        else:
+            await lose(message, state, client)
+    # выпало выбранное число
+    elif dice_score == dice_choice:
         await win(message, state, client, dice = True)
     else:
         await lose(message, state, client)
@@ -67,22 +79,29 @@ async def play_dice(message: Message, state: FSMContext, client: ClientRow):
 async def start_input_dice(message: Message, state: FSMContext, client: ClientRow):
     player_data = await state.get_data()
     local_log.info(f'Input dice num\n{client}\n{player_data["bet"]}')
-    await message.answer(messages_dict['casino_dice_input'])    # type: ignore
+    await message.answer(messages_dict['casino_dice_input'], reply_markup=ckb.choose_dice())    # type: ignore
     await state.set_state(CasinoStates.inputing_dice_num)
     
 # ввод числа для кости (удачно)
 @router.message(CasinoStates.inputing_dice_num, CorrectDiceChoice())   # type: ignore
 async def success_dice_input(message: Message, state: FSMContext, client: ClientRow):
     local_log.info(f'Dice choice accepted: {message.text}\n{client}')
-    await message.reply(messages_dict['casino_choice_accepted'])    # type: ignore
-    await state.update_data(dice_num=int(message.text)) # type: ignore
+    await message.reply(messages_dict['casino_choice_accepted'], reply_markup=ckb.try_throw_bet_num())    # type: ignore
+    # сохранение выбора
+    # число
+    try:
+        await state.update_data(dice_num=int(message.text)) # type: ignore
+    # чет/нечет
+    except Exception:
+        await state.update_data(dice_num=message.text) # type: ignore
+        
     await state.set_state(CasinoStates.base_state)
 
 # ввод числа для кости (неудачно)
 @router.message(CasinoStates.inputing_dice_num)
 async def fail_dice_input(message: Message, state: FSMContext, client: ClientRow):
     local_log.info(f'Dice invalid number: {message.text}\n{client}')
-    await message.reply(messages_dict['casino_dice_fail_input'])    # type: ignore
+    await message.reply(messages_dict['casino_dice_fail_input'], reply_markup=ckb.choose_dice())    # type: ignore
     
 # сделать ставку
 @router.message(F.text.lower() == buttons_dict['casino_bet'].lower(), CasinoStates.inputing_bet)
@@ -129,7 +148,8 @@ async def win(message: Message, state: FSMContext, client: ClientRow, dice: bool
     bet = user_data['bet']
     win_amount: int
     if dice:
-        win_amount = bet * DICE_COEF
+        dice_choice = user_data['dice_num']
+        win_amount = bet * DICE_ONE_COEF if isinstance(dice_choice, int) else bet * DICE_DIV_COEF
         await message.answer_photo(photo=try_photos['stonks'])
         await message.answer(messages_dict['casino_win'].substitute(win=win_amount, bet = bet)) # type: ignore
     else:
