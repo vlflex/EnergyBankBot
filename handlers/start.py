@@ -10,7 +10,7 @@ from modules.logger import Logger
 from modules.database import ClientRow
 import config as conf
 from config import messages_dict, config
-from keyboards import sign
+from keyboards import menu_kb, sign
 
 local_log = Logger('start', f'{conf.PATH}/log/start.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
@@ -32,7 +32,7 @@ async def cmd_start(message: Message, client: ClientRow, state: FSMContext):
     await state.clear()
     main_log.info(f'Greet with\n{client}')
     await message.answer(messages_dict['greet'].substitute(name = message.from_user.full_name), # type: ignore
-                        #reply_markup= здесь будет запрос пин-кода и если он верный, то и менюшка
+                        reply_markup= menu_kb.main_menu_kb()
                         ) 
 
 # обработка /start для НЕавторизованных пользователей
