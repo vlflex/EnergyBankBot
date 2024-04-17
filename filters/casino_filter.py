@@ -13,7 +13,7 @@ from typing import Union, Any, Dict
 local_log = Logger('casino_filter', f'{conf.PATH}/log/casino_filter.log', level=conf.LOG_LEVEL)
 
 # проверка: сделана ли ставка
-class SetBetFilter(BaseFilter):
+class HaveBetFilter(BaseFilter):
     async def __call__(self, message: Message, state: FSMContext):
         user_data = await state.get_data()
         bet = user_data.get('bet', False)
@@ -31,3 +31,21 @@ class EnoughMoneyFilter(BaseFilter):
         else:
             return bet >= client.balance
         
+# проверка: введено ли число для броска кости
+class HaveDiceNumFilter(BaseFilter):
+    async def __call__(self, message: Message, state: FSMContext):
+        user_data = await state.get_data()
+        bet = user_data.get('dice_num', False)
+        return bool(bet)
+        
+# проверка ввод значения dice
+class  CorrectDiceChoice(BaseFilter):
+    async def __call__(self, message: Message):
+        dice_choice: int
+        try:
+            dice_choice = int(message.text) # type: ignore
+        except Exception:
+            return False
+        else:
+            return 1 <= dice_choice <= 6
+            

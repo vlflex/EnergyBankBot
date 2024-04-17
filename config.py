@@ -61,6 +61,9 @@ messages_dict: Dict[str, str | Template] = {
     'casino_bet_accepted': 'Ставка принята',
     'casino_noenough': Template('Недостаточно средств\nСтавка: <b>$bet</b>\nБаланс: <b>$balance</b>'),
     'casino_invalid_bet': 'Ошибка ввода ставки, введите число',
+    'casino_dice_input': 'Выберите число от 1 до 6',
+    'casino_dice_fail_input': 'Ошибка ввода: введите число от 1 до 6',
+    'casino_choice_accepted': 'Выбор сохранён',
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
@@ -84,6 +87,7 @@ buttons_dict: Dict[str, str] = {
     'casino_slot': 'Крутка🎰',
     'casino_dice': 'Кость🎲',
     'casino_bet': 'Ставка💰',
+    'casino_dice_choice': 'Выбрать число🔢',
 }
 
 stickers_dict: Dict[str, str] = {
@@ -102,7 +106,12 @@ photos_dict: Dict[str, str] = {
     'think': 'AgACAgIAAxkBAAIDMWYe9wpOmiQba8qjtww_uxon0CC3AALs2DEbN6f4SKz_pwrquqJDAQADAgADbQADNAQ',
     'china': 'AgACAgIAAxkBAAIDWGYe99TmZpBQYx99Cfypw2jM1au-AALz1TEb5Xz4SJn_PXfRxf78AQADAgADeQADNAQ',
     'f_nv': 'AgACAgIAAxkBAAIDWmYe-FGLVod9nS6oPCV1ZSJfe9ZkAALt2DEbN6f4SCYh0AhDU0NQAQADAgADeQADNAQ',
-    
+}
+
+try_photos: Dict[str, str] = {
+    'stonks':'AgACAgIAAxkBAAIE52YfqQPk6iDnlymVmEGwFIvEsab1AAKU3jEbWTMBSXsUdlzlbJerAQADAgADeAADNAQ',
+    'not_stonks':'AgACAgIAAxkBAAIE6WYfqUW_WoNXCFSgPisHygFYorvBAAKV3jEbWTMBST3cdBD9iTXGAQADAgADeAADNAQ',
+    'ultra_stonks': 'AgACAgIAAxkBAAIE62YfqXRRs8IzeO0afZa-SQ2vK1DiAAKW3jEbWTMBSfk8hTPbYkCrAQADAgADbQADNAQ',
 }
 
 # шифрование данных

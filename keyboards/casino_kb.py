@@ -11,3 +11,11 @@ def try_spin_throw_bet():
 # сделать ставку
 def set_bet_kb():
     return reply_kb_builder([buttons_dict['casino_bet']])
+
+# бросить кость, выбрать ставку, выбрать число
+def try_throw_bet_num():
+    return reply_kb_builder([buttons_dict['casino_dice'], buttons_dict['casino_bet'], buttons_dict['casino_dice_choice']], button_in_row=[1, 2])
+    
+
+
+
