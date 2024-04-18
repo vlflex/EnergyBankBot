@@ -2,6 +2,7 @@ from aiogram.filters import BaseFilter
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
+from decimal import Decimal
 from datetime import datetime
 from sys import path
 import config as conf
@@ -59,3 +60,15 @@ class RestoringPinFilter(BaseFilter):
         user_data = await state.get_data()
         restore_flag = user_data.get('restore_pin', False)
         return bool(restore_flag)
+    
+# фильтр для проверки: достаточно ли денег на счету клиента
+@local_log.wrapper()
+class HaveMoneyToPayFilter(BaseFilter):
+    async def __call__(self, message: Message, client: ClientRow):
+        pay_amount = None
+        try:
+            pay_amount = Decimal(message.text)  # type: ignore
+        except Exception:
+            return False
+        else:
+            return pay_amount <= client.balance
