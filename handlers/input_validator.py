@@ -4,6 +4,7 @@ from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 from aiogram.enums import MessageEntityType, ParseMode
 
+from decimal import Decimal
 from datetime import date, datetime
 from random import randint
 from sys import path
@@ -17,7 +18,8 @@ from config import messages_dict, config, create_email_form, buttons_dict
 from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from handlers.auth import login
-from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter
+from handlers.menu import pay_attempt
+from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
@@ -205,3 +207,24 @@ async def pin_timer(message: Message, client: ClientRow, state: FSMContext, time
         await state.update_data(pin_attempts=0)
         await state.set_state(InputStates.inputing_pin)
         await login(message=message, client=client, state=state)
+        
+# ввод суммы для платежа: успех, совершение платежа
+@router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), HaveMoneyToPayFilter())   # type: ignore
+async def pay_input_success(message: Message, client: ClientRow, state: FSMContext):
+    await message.reply(messages_dict['pay_attempt'])   # type: ignore
+    main_log.info(f'Go to try transfer: {message.text}\n{client}')
+    amount = Decimal(message.text)    # type: ignore
+    await state.update_data(pay_amount=amount)
+    await pay_attempt(message, client, state)
+
+# ввод суммы для платежа: недостаточно средств
+@router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'))   # type: ignore
+async def pay_input_not_enough_money(message: Message, client: ClientRow, state: FSMContext):
+    local_log.info(f'Client have no enough money: {message.text}\n{client}')
+    await message.reply(messages_dict['pay_input_nomoney']) # type: ignore
+
+# ввод суммы для платежа: неверный формат
+@router.message(InputStates.inputing_pay_amount)
+async def pay_input_invalid(message: Message, client: ClientRow):
+    local_log.info(f'Client invalid input: {message.text}\n{client}')
+    await message.reply(messages_dict['pay_input_invalid']) # type: ignore
