@@ -28,6 +28,8 @@ router.message.filter(MagicData(F.client.authorized.is_(True)))
 DICE_ONE_COEF = 10
 # коэффициент для dice (чет/нечет)
 DICE_DIV_COEF = 2
+# коэффицента для слотов
+SLOT_COEF = 100
 # коэффициент для slots
 class CasinoStates(StatesGroup):
     base_state = State()
@@ -57,7 +59,15 @@ async def play_dice(message: Message, state: FSMContext, client: ClientRow):
     
     dice_score = dice_msg.dice.value    # type: ignore
     player_data = await state.get_data()
+    player_bet = player_data['bet']
     dice_choice = player_data['dice_num']
+    # запрет, если ставка больше баланса
+    if player_bet > client.balance:
+        await message.answer(messages_dict['casino_bet_more_balance'].substitute(bet="{:,}".format(player_bet)),  # type: ignore
+                            reply_markup=ckb.set_bet_kb(),
+                            )  
+        await message.answer_sticker(sticker=choice(tuple(stickers_dict.values())))
+        return
     # проверка значений
     # выбрано чет/нечет
     if isinstance(dice_choice, str):
@@ -175,6 +185,6 @@ async def lose(message: Message, state: FSMContext, client: ClientRow):
     with DataBase(config.db_name.get_secret_value()) as db:
         db.update(
             id = client.id,
-            balance=client.balance-bet
+            balance= 0 if bet == client.balance else client.balance-bet
         )
     local_log.info(f'Player lose {bet}\n{client}')

@@ -78,6 +78,7 @@ messages_dict: Dict[str, str | Template] = {
     'casino_choice_accepted': 'Выбор сохранён',
     'casino_win':Template('Выигрыш: $win\nСтавка $bet'),
     'casino_lose':Template('Проигрыш: $bet'),
+    'casino_bet_more_balance': Template('Ошибка: ставка $bet больше средств на счёте: /balance'),
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:

@@ -87,7 +87,7 @@ class DataBase():
             # если аргумент равен None, то присваивается значение из БД
             pincode = old_client.pincode if pincode is None else pincode
             email = old_client.email if email is None else email
-            authorized = old_client.authorized if not False else authorized
+            authorized = old_client.authorized if not authorized else authorized
             balance = old_client.balance if balance is None else balance
             reg_date = old_client.reg_date if reg_date is None else reg_date
             # шифрование пинкода и почты
