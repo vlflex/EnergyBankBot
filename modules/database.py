@@ -81,15 +81,15 @@ class DataBase():
     
     # обновление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: date | None = None):   # type: ignore
+    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = None, reg_date: date | None = None):   # type: ignore
         old_client = self.select(id)
         if old_client:
             # если аргумент равен None, то присваивается значение из БД
-            pincode = pincode if pincode else old_client.pincode
-            email = email if email else old_client.email
-            authorized = authorized if authorized else old_client.authorized
-            balance = balance if balance else old_client.balance
-            reg_date = reg_date if reg_date else old_client.reg_date
+            pincode = old_client.pincode if pincode is None else pincode
+            email = old_client.email if email is None else email
+            authorized = old_client.authorized if not authorized else authorized
+            balance = old_client.balance if balance is None else balance
+            reg_date = old_client.reg_date if reg_date is None else reg_date
             # шифрование пинкода и почты
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
             email = get_ciphered(str(email)) if email else email # type: ignore
