@@ -74,6 +74,8 @@ messages_dict: Dict[str, str | Template] = {
     'pay_attempt': 'Попытка совершение платежа..',
     'pay_input_success': 'Платеж успешно выполнен',
     'pay_input_fail': 'Ошибка платежа: кажется что-то пошло не так:()',
+    'pay_transaction_sender': Template('Перевод средств на счет №$getter'),
+    'pay_transaction_getter': Template('Получение средств со счета №$sender'),
     'currency_choose': 'Выберите валюту',
     'currency_result': Template('Результат для <i>$other_name</i>:\n<b>$other_nominal</b> $other_currency\t=\t<b>$our_nominal</b> $our_currency'),
     'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',
