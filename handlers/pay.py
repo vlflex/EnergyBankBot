@@ -2,7 +2,9 @@ from aiogram import Router, F
 from aiogram.filters import Command, MagicData
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
+from aiogram.enums import ParseMode
 
+from datetime import datetime
 from sys import path
 path.append('D:/Университет/Учебная практика/Bank bot') 
 from modules.logger import Logger
@@ -74,12 +76,30 @@ async def pay_attempt(message: Message, client: ClientRow, state: FSMContext):
                     balance = client.balance - pay_amount
             )
             sender_row = db.cur.rowcount
+            # добавление транзакции
+            db.add_trans(
+                type_id=db.DEBIT_ID,
+                client_id=client.id,
+                source_id=db.TRANSFER_ID,
+                amount=-pay_amount,
+                date=datetime.now(),
+                desc=messages_dict['pay_transaction_sender'].substitute(getter=pay_getter.id),  # type: ignore
+            )
             # начисление получателю
             db.update(
                     id = pay_getter.id,
                     balance = pay_getter.balance + pay_amount
             )
             getter_row = db.cur.rowcount
+            # добавление транзакции
+            db.add_trans(
+                type_id=db.ACCRUAL_ID,
+                client_id=pay_getter.id,
+                source_id=db.TRANSFER_ID,
+                amount=pay_amount,
+                date=datetime.now(),
+                desc=messages_dict['pay_transaction_getter'].substitute(sender=client.id),  # type: ignore
+            )
     # проверка на успешность платежа
     if sender_row and getter_row:
         main_log.info(f'Successful transfer\nto {pay_getter}\nby {client}')
