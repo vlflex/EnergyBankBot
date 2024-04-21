@@ -2,6 +2,8 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram.enums import ParseMode
+from aiogram.fsm.state import State
+from aiogram.fsm.context import FSMContext
 
 import pandas
 from typing import Dict
@@ -17,6 +19,8 @@ local_log = Logger('currency', f'{conf.PATH}/log/currency.log', level=conf.LOG_L
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
 
 router = Router()
+
+inputing_currency = State()
 
 # обработка кнопки меню/команды, выбор валюты
 @router.message(Command('currency'))
@@ -47,6 +51,39 @@ async def handle_currency_button(message: Message, client: ClientRow):
                 reply_markup=mkb.choose_currency_kb(),
         )
         main_log.info(f'Client successfully got info about currency "{currency}":\n{client}')
+
+# обработка других валют
+@router.message(F.text.lower() == buttons_dict['curency_other'].lower())
+async def handle_other_currency(message: Message, state: FSMContext):
+    await message.answer(messages_dict['currency_input'])   # type: ignore
+    await state.set_state(inputing_currency)    # type: ignore
+    
+# ввод названия валюты
+@router.message(inputing_currency) # type: ignore
+async def curency_input(message: Message, state: FSMContext, client: ClientRow):
+    currency = message.text.strip().upper() # type: ignore
+    # обработка ввода RUB
+    if currency == RUB[:3]:
+        local_log.warning(f'Rub currency input "{currency}":\n{client}')
+        await message.reply(messages_dict['currency_rub'])  # type: ignore
+        await handle_other_currency(message=message,state=state)
+        return
+    try:
+        currency_info = currency_get_info(currency_code=currency, currency_icon=currency)
+    except Exception as error:
+        local_log.warning(f'Fail get info about inputed currency "{currency}":\n{client}\n{error}')
+        await message.reply(messages_dict['currency_input_fail'])   # type: ignore
+        await handle_other_currency(message=message,state=state)
+        
+    else:
+        await message.answer(
+                messages_dict['currency_result'].substitute(**currency_info),   # type: ignore
+                parse_mode=ParseMode.HTML,
+                reply_markup=mkb.choose_currency_kb(),
+        )
+        main_log.info(f'Client successfully got info about inputed currency "{currency}":\n{client}')
+        await state.set_state(state=None)
+        
 
 # функция для получения информации о валюте
 def currency_get_info(currency_code: str, currency_icon: str) -> Dict[str, str]:
