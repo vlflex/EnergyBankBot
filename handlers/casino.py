@@ -76,12 +76,12 @@ async def play_dice(message: Message, state: FSMContext, client: ClientRow):
         if dice_score % 2 == dice_rem:
             await win(message, state, client, dice = True)
         else:
-            await lose(message, state, client)
+            await lose(message, state, client, dice = True)
     # выпало выбранное число
     elif dice_score == dice_choice:
         await win(message, state, client, dice = True)
     else:
-        await lose(message, state, client)
+        await lose(message, state, client, dice = True)
 
 # выбор числа для броска кости
 @router.message(F.text.lower().lower() == buttons_dict['casino_dice_choice'].lower(), CasinoStates.base_state, HaveBetFilter(), HaveDiceNumFilter())
@@ -176,9 +176,10 @@ async def win(message: Message, state: FSMContext, client: ClientRow, dice: bool
     local_log.info(f'Player won (dice={dice}) {win_amount} with state {bet}\n{client}')
 
 # проигрыш
-async def lose(message: Message, state: FSMContext, client: ClientRow):
+async def lose(message: Message, state: FSMContext, client: ClientRow, dice: bool):
     user_data = await state.get_data()
     bet = user_data['bet']
+    trans_msg = messages_dict['pay_casino_dice_lose'] if dice else messages_dict['pay_casino_slot_lose']
     await message.answer_photo(photo=try_photos['not_stonks'])
     await message.answer(messages_dict['casino_lose'].substitute(bet = bet)) # type: ignore
     # обновление баланса
