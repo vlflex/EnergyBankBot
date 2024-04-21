@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import Command
+from aiogram.filters import Command, MagicData
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
 
@@ -16,6 +16,7 @@ local_log = Logger('pay', f'{conf.PATH}/log/pay.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
 
 router = Router()
+router.message.filter(MagicData(F.client.authorized.is_(True)))
 
 # выбор пользователя для оплаты
 @router.message(Command('pay'))
