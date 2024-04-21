@@ -75,7 +75,10 @@ messages_dict: Dict[str, str | Template] = {
     'pay_input_fail': 'Ошибка платежа: кажется что-то пошло не так:()',
     'currency_choose': 'Выберите валюту',
     'currency_result': Template('Результат для <i>$other_name</i>:\n<b>$other_nominal</b> $other_currency\t=\t<b>$our_nominal</b> $our_currency'),
-    'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',
+    'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',\
+    'currency_input': 'Введите название валюты из 3 букв (например "USD")',
+    'currency_input_fail': 'Ошибка: данные о валюте не были найдены',
+    'currency_rub': 'Ошибка: нельзя получить курс рубля в рублях',
 }
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
