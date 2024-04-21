@@ -5,7 +5,6 @@ from aiogram.enums import ParseMode
 
 import pandas
 from typing import Dict
-from currency_converter import CurrencyConverter
 from sys import path
 path.append('D:/Университет/Учебная практика/Bank bot') 
 from modules.logger import Logger
