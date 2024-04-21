@@ -2,10 +2,10 @@ import psycopg2 as psql
 from psycopg2 import extensions as psql_ext
 from psycopg2.errors import Error as PSQLerror
 
-from collections import namedtuple
-from typing import Tuple
+from typing import Tuple, NamedTuple
 from logging import DEBUG, INFO
 from datetime import date
+from decimal import Decimal
 
 from sys import path
 path.append('D:/Университет/Учебная практика/Bank bot/') 
@@ -15,7 +15,13 @@ from modules.logger import Logger
 # настройка логгера
 local_log = Logger('database', f'{conf.PATH}/log/database.log', level=LOG_LEVEL)
 # класс, соответствующий полям записи в БД
-ClientRow = namedtuple('ClientRow', ['id', 'pincode', 'email', 'authorized', 'balance', 'reg_date'])
+class ClientRow(NamedTuple):
+    id: int
+    pincode: int | None
+    email: str | None
+    authorized: bool
+    balance: Decimal
+    reg_date: date | None
 
 class DataBase():
     # инициализация (по пути)
@@ -88,7 +94,7 @@ class DataBase():
             pincode = old_client.pincode if pincode is None else pincode
             email = old_client.email if email is None else email
             authorized = old_client.authorized if not authorized else authorized
-            balance = old_client.balance if balance is None else balance
+            balance = old_client.balance if balance is None else balance    # type: ignore
             reg_date = old_client.reg_date if reg_date is None else reg_date
             # шифрование пинкода и почты
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
@@ -129,7 +135,7 @@ class DataBase():
     @local_log.wrapper(DEBUG, DEBUG)
     def uncipher_client(client: ClientRow) -> ClientRow:
         unciph_client = client._replace(
-            pincode=get_unciphered(client.pincode) if client.pincode else client.pincode,
+            pincode=get_unciphered(str(client.pincode)) if client.pincode else client.pincode,
             email = get_unciphered(client.email) if client.email else client.email
             )
         return unciph_client
