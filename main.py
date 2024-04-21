@@ -14,10 +14,10 @@ dp.message.outer_middleware(GetClient())
 
 async def main():
     dp.include_routers(
+            start.router,
             menu.router,
             pay.router,
             currency.router,
-            start.router,
             iv.router,
             auth.router,
             register.router,
