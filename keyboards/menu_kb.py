@@ -1,7 +1,7 @@
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, KeyboardButtonRequestUser
 from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from typing import Sequence, List
-from config import buttons_dict
+from config import buttons_dict, currencies_dict
 from keyboards.sign import reply_kb_builder
 
 # клавиатура для главного меню
@@ -35,3 +35,16 @@ def choose_pay_target_kb():
     markup.one_time_keyboard = True
     markup.resize_keyboard = True
     return markup
+
+# клавиатура выбора валюты 
+def choose_currency_kb():
+    return reply_kb_builder(
+        buttons=[
+        currencies_dict['USD'], currencies_dict['EUR'], currencies_dict['CNY'], currencies_dict['INR'],
+        currencies_dict['UAH'], currencies_dict['BYN'], currencies_dict['KZT'], currencies_dict['UZS'],
+        currencies_dict['JPY'], currencies_dict['GBP'], currencies_dict['AED'], currencies_dict['TRY'],
+        buttons_dict['menu'], buttons_dict['curency_other'],
+        ],
+        button_in_row=[4, 4, 4, 2])
+    
+
