@@ -6,6 +6,7 @@ from aiogram.filters import Command, MagicData
 from aiogram.enums.dice_emoji import DiceEmoji
 from aiogram.enums import ParseMode
 
+from datetime import datetime
 from re import compile
 from typing import Dict
 from random import choice
@@ -156,7 +157,8 @@ async def no_bet(message: Message, client: ClientRow):
 async def win(message: Message, state: FSMContext, client: ClientRow, dice: bool):
     user_data = await state.get_data()
     bet = user_data['bet']
-    win_amount: int
+    win_amount: float
+    trans_msg = messages_dict['pay_casino_dice_win'] if dice else messages_dict['pay_casino_slot_win']
     if dice:
         dice_choice = user_data['dice_num']
         win_amount = bet * DICE_ONE_COEF if isinstance(dice_choice, int) else bet * DICE_DIV_COEF
@@ -171,7 +173,15 @@ async def win(message: Message, state: FSMContext, client: ClientRow, dice: bool
     with DataBase(config.db_name.get_secret_value()) as db:
         db.update(
             id = client.id,
-            balance=client.balance+win_amount
+            balance=client.balance+win_amount   # type: ignore
+        )
+        db.add_trans(
+            type_id=db.ACCRUAL_ID,
+            client_id=client.id,
+            source_id=db.CASINO_ID,
+            amount=win_amount,  # type: ignore
+            date=datetime.now(),
+            desc=trans_msg, # type: ignore
         )
     local_log.info(f'Player won (dice={dice}) {win_amount} with state {bet}\n{client}')
 
@@ -187,5 +197,13 @@ async def lose(message: Message, state: FSMContext, client: ClientRow, dice: boo
         db.update(
             id = client.id,
             balance= 0 if bet == client.balance else client.balance-bet
+        )
+        db.add_trans(
+            type_id=db.DEBIT_ID,
+            client_id=client.id,
+            source_id=db.CASINO_ID,
+            amount=-bet,  # type: ignore
+            date=datetime.now(),
+            desc=trans_msg, # type: ignore
         )
     local_log.info(f'Player lose {bet}\n{client}')
