@@ -71,4 +71,4 @@ class HaveMoneyToPayFilter(BaseFilter):
         except Exception:
             return False
         else:
-            return pay_amount <= client.balance
+            return pay_amount <= client.balance # type: ignore
