@@ -14,11 +14,11 @@ dp.message.outer_middleware(GetClient())
 
 async def main():
     dp.include_routers(
-            casino.router,
+            start.router,
             menu.router,
+            casino.router,
             pay.router,
             currency.router,
-            start.router,
             iv.router,
             auth.router,
             register.router,

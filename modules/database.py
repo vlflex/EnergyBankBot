@@ -4,7 +4,7 @@ from psycopg2.errors import Error as PSQLerror
 
 from typing import Tuple, NamedTuple
 from logging import DEBUG, INFO
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from sys import path
@@ -22,8 +22,24 @@ class ClientRow(NamedTuple):
     authorized: bool
     balance: Decimal
     reg_date: date | None
+    
+# класс для управлениями транзакциями
+class TransactionRow(NamedTuple):
+    id: int
+    type: str
+    client_id: int
+    source: str
+    amount: Decimal 
+    desc: str | None
+    date: datetime
 
 class DataBase():
+    DEBIT_ID = 1
+    ACCRUAL_ID = 2
+    # виды списания/начисления
+    TRANSFER_ID = 1
+    CASINO_ID = 2
+    
     # инициализация (по пути)
     def __init__(self, name: str):
         self.__name: str = name
@@ -127,6 +143,59 @@ class DataBase():
         unchip_clients_tuple = tuple(self.uncipher_client(ClientRow(*row)) for row in results)
         return unchip_clients_tuple # type: ignore
     
+    # поиск транзакции
+    @local_log.wrapper(arg_level=DEBUG, res_level=DEBUG)
+    def select_trans(self, id: int) -> TransactionRow | None:
+        self.__cur.execute("""--sql
+                SELECT *
+                FROM 
+                    transactions_full
+                WHERE 
+                    id = %s""", (id,))
+        result = self.__cur.fetchone()
+        if result:
+            return TransactionRow(*result)
+        else:
+            local_log.warning(f'Can not select row (id={id}): it has not been found')
+        
+    # добавление записи
+    @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
+    def add_trans(self, 
+            type_id: int,  
+            client_id: int, 
+            source_id: int, 
+            amount: Decimal, 
+            date: datetime,
+            desc: str | None = None, 
+            ):
+        
+        # type_id не соответствует сумме транзакции
+        if (type_id == self.DEBIT_ID and amount > 0) or (type_id == self.ACCRUAL_ID and amount < 0):
+            raise InvalidTransactionException(f'type_id is not suitable for amount:\ntype_id:{type_id}\tamount:{amount}')
+        # пропуск нулевых транзакций 
+        elif amount == 0:
+            return
+        
+        self.__cur.execute('''--sql
+                        INSERT INTO 
+                            transactions(type_id, client_id, source_id, amount, "date", "desc")
+                        VALUES 
+                            (%s, %s, %s, %s, %s, %s)
+                        ''', (type_id, client_id, source_id, amount, date, desc))
+        self.__conn.commit()
+    
+    # получение всех записей
+    @local_log.wrapper(DEBUG, DEBUG)
+    def select_all_trans(self) -> Tuple[TransactionRow]:
+        self.__cur.execute("""--sql
+                SELECT *
+                FROM 
+                    transactions_full
+                """)
+        results = self.__cur.fetchall()
+        transation_row_tuple = tuple(TransactionRow(*row) for row in results)
+        return transation_row_tuple # type: ignore
+    
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.__name})'
     
@@ -150,3 +219,18 @@ class DataBaseException(Exception):
 class DataBaseConnectionException(DataBaseException):
     def __init__(self, message):
         super().__init__(message)
+        
+class TransactionException(DataBaseException):
+    def __init__(self, message):
+        super().__init__(message)
+        
+class InvalidTransactionException(TransactionException):
+    def __init__(self, message):
+        super().__init__(message)
+        
+def main():
+    with DataBase(config.db_name.get_secret_value()) as db:
+        print(db.select_all_trans())
+        
+if __name__ == '__main__':
+    main()
