@@ -31,6 +31,13 @@ PATH = 'D:/Университет/Учебная практика/Bank bot'
 CODE_COOLDOWN = 180
 # число попыток до блокировки
 CODE_ATTEMPTS = 5
+
+# URL для получение информации о курсе валют
+CURRENCY_QUERY_URL = f'http://www.cbr.ru/scripts/XML_daily.asp'
+# рубль
+RUB = 'RUB🇷🇺'
+# максимальный номинал, при котором делится курс
+MAX_NOMINAL = 100
 # словари с сообщениями
 messages_dict: Dict[str, str | Template] = {
     'greet': Template(f'Здравствуйте, $name! Выберите желаемое действие'),
@@ -66,6 +73,9 @@ messages_dict: Dict[str, str | Template] = {
     'pay_attempt': 'Попытка совершение платежа..',
     'pay_input_success': 'Платеж успешно выполнен',
     'pay_input_fail': 'Ошибка платежа: кажется что-то пошло не так:()',
+    'currency_choose': 'Выберите валюту',
+    'currency_result': Template('Результат для <i>$other_name</i>:\n<b>$other_nominal</b> $other_currency\t=\t<b>$our_nominal</b> $our_currency'),
+    'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',
     'casino_greet':'Велкам ту казик',
     'casino_nomoney':'А денег хватит?',
     'casino_input_bet':'Введите сумму ставки',
@@ -80,6 +90,7 @@ messages_dict: Dict[str, str | Template] = {
     'casino_lose':Template('Проигрыш: $bet'),
     'casino_bet_more_balance': Template('Ошибка: ставка $bet больше средств на счёте: /balance'),
 }
+
 # функция для создания словаря для передачи в email форму
 def create_email_form(email: str, code: int, registration: bool = True) -> Dict[str, str]:
     email_form: Dict[str, str] = {
@@ -107,6 +118,7 @@ buttons_dict: Dict[str, str] = {
     'calculator': 'Калькулятор🧮',
     'settings': 'Настройки⚙',
     'menu': 'Меню🧩',
+    'curency_other': 'Другие валюты',
     'casino_slot': 'Крутка🎰',
     'casino_dice': 'Кость🎲',
     'casino_bet': 'Ставка💰',
@@ -129,6 +141,23 @@ photos_dict: Dict[str, str] = {
     'think': 'AgACAgIAAxkBAAIDMWYe9wpOmiQba8qjtww_uxon0CC3AALs2DEbN6f4SKz_pwrquqJDAQADAgADbQADNAQ',
     'china': 'AgACAgIAAxkBAAIDWGYe99TmZpBQYx99Cfypw2jM1au-AALz1TEb5Xz4SJn_PXfRxf78AQADAgADeQADNAQ',
     'f_nv': 'AgACAgIAAxkBAAIDWmYe-FGLVod9nS6oPCV1ZSJfe9ZkAALt2DEbN6f4SCYh0AhDU0NQAQADAgADeQADNAQ',
+}
+
+# словарь для хранения кодировок валют
+currencies_dict: Dict[str, str] = {
+    'USD':'USD🇺🇸',
+    'EUR':'EUR🇪🇺',
+    'CNY':'CNY🇨🇳',
+    'INR':'INR🇮🇳',
+    'UAH':'UAH🇺🇦',
+    'BYN':'BYN🇧🇾',
+    'KZT':'KZT🇰🇿',
+    'UZS':'UZS🇺🇿',
+    'JPY':'JPY🇯🇵',
+    'GBP':'GBP🇬🇧',
+    'AED':'AED🇦🇪',
+    'TRY':'TRY🇹🇷',
+    'AUF':'AUF',
 }
 
 commands_list: List[str] = [

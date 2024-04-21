@@ -2,7 +2,7 @@ from aiogram import Dispatcher, Bot
 import asyncio
 from config import config
 import config as conf
-from handlers import start, register, auth, input_validator as iv, casino, menu, pay
+from handlers import start, register, auth, input_validator as iv, casino, menu, pay, currency
 from middlewares.data_getters import GetClient
 from modules.logger import Logger
 
@@ -17,6 +17,7 @@ async def main():
             casino.router,
             menu.router,
             pay.router,
+            currency.router,
             start.router,
             iv.router,
             auth.router,
