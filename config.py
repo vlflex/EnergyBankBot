@@ -167,7 +167,6 @@ currencies_dict: Dict[str, str] = {
     'GBP':'GBP🇬🇧',
     'AED':'AED🇦🇪',
     'TRY':'TRY🇹🇷',
-    'AUF':'AUF',
 }
 
 commands_list: List[str] = [
