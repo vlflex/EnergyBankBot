@@ -199,6 +199,29 @@ class DataBase():
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}({self.__name})'
     
+    # получение последних транзакций клиента
+    @local_log.wrapper(DEBUG, DEBUG)
+    def select_client_trans(self, client_id: int) -> Tuple[TransactionRow]:
+        self.__cur.execute("""--sql
+            SELECT *
+            FROM 
+                transactions_full
+            WHERE client_id = %s
+            ORDER BY "date" DESC
+        """, (client_id,))
+        results = self.__cur.fetchall()
+        transaction_row_tuple = tuple(self.__extract_trans_date(TransactionRow(*row)) for row in results)
+        return transaction_row_tuple # type: ignore
+
+    # заменяет строковое значение поля объекта-транзакции date на datetime объект
+    @staticmethod
+    @local_log.wrapper(DEBUG, DEBUG)
+    def __extract_trans_date(trans: TransactionRow) -> TransactionRow:
+        if isinstance(trans.date, str):
+            return trans._replace(date=dt.datetime.strptime(trans.date, conf.TRANS_DATE_SQL_FORMAT)) # type: ignore
+        else:
+            return trans
+
     # декодирование pin и email из записи клиента
     @staticmethod
     @local_log.wrapper(DEBUG, DEBUG)
