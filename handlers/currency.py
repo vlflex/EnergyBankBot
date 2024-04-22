@@ -2,7 +2,7 @@ from aiogram import Router, F
 from aiogram.filters import Command
 from aiogram.types import Message
 from aiogram.enums import ParseMode
-from aiogram.fsm.state import State
+from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 import pandas
@@ -20,7 +20,8 @@ main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
 
 router = Router()
 
-inputing_currency = State()
+class CurrencyStates(StatesGroup):
+    inputing_currency = State()
 
 # обработка кнопки меню/команды, выбор валюты
 @router.message(Command('currency'))
@@ -56,10 +57,10 @@ async def handle_currency_button(message: Message, client: ClientRow):
 @router.message(F.text.lower() == buttons_dict['curency_other'].lower())
 async def handle_other_currency(message: Message, state: FSMContext):
     await message.answer(messages_dict['currency_input'])   # type: ignore
-    await state.set_state(inputing_currency)    # type: ignore
+    await state.set_state(CurrencyStates.inputing_currency)    # type: ignore
     
 # ввод названия валюты
-@router.message(inputing_currency) # type: ignore
+@router.message(CurrencyStates.inputing_currency) # type: ignore
 async def curency_input(message: Message, state: FSMContext, client: ClientRow):
     currency = message.text.strip().upper() # type: ignore
     # обработка ввода RUB
