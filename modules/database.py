@@ -227,10 +227,3 @@ class TransactionException(DataBaseException):
 class InvalidTransactionException(TransactionException):
     def __init__(self, message):
         super().__init__(message)
-        
-def main():
-    with DataBase(config.db_name.get_secret_value()) as db:
-        print(db.select_all_trans())
-        
-if __name__ == '__main__':
-    main()
