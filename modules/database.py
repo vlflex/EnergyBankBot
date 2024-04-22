@@ -2,10 +2,11 @@ import psycopg2 as psql
 from psycopg2 import extensions as psql_ext
 from psycopg2.errors import Error as PSQLerror
 
-from typing import Tuple, NamedTuple
+from typing import Tuple, NamedTuple, Sequence
 from logging import DEBUG, INFO
 import datetime as dt
 from decimal import Decimal
+from prettytable import PrettyTable
 
 from sys import path
 path.append('D:/Университет/Учебная практика/Bank bot/') 
@@ -231,6 +232,18 @@ class DataBase():
             email = get_unciphered(client.email) if client.email else client.email
             )
         return unciph_client
+    
+    # создание таблицы для отображения транзакций
+    @staticmethod
+    @local_log.wrapper(DEBUG, DEBUG)
+    def generate_trans_table(trans_seq: Sequence[TransactionRow]) -> str:
+        table = PrettyTable()
+        table.field_names = conf.TRANS_TABLE_HEADERS
+        for trans in trans_seq:
+            formated_date =  trans.date.strftime(conf.TRANS_DATE_FORMAT)
+            formated_amount = f'{trans.amount:,}'
+            table.add_row([trans.type, formated_amount, trans.source, formated_date, trans.desc])
+        return str(table)
 
 class DataBaseException(Exception):
     """DataBase base exception
