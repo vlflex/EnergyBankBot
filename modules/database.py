@@ -4,7 +4,7 @@ from psycopg2.errors import Error as PSQLerror
 
 from typing import Tuple, NamedTuple
 from logging import DEBUG, INFO
-from datetime import date, datetime
+import datetime as dt
 from decimal import Decimal
 
 from sys import path
@@ -21,7 +21,7 @@ class ClientRow(NamedTuple):
     email: str | None
     authorized: bool
     balance: Decimal
-    reg_date: date | None
+    reg_date: dt.date | None
     
 # класс для управлениями транзакциями
 class TransactionRow(NamedTuple):
@@ -30,8 +30,8 @@ class TransactionRow(NamedTuple):
     client_id: int
     source: str
     amount: Decimal 
+    date: dt.datetime
     desc: str | None
-    date: datetime
 
 class DataBase():
     DEBIT_ID = 1
@@ -82,12 +82,12 @@ class DataBase():
                     id = %s""", (id,))
         result = self.__cur.fetchone()
         if result:
-            return self.uncipher_client(ClientRow(*result))
+            return self.__uncipher_client(ClientRow(*result))
         else:
             local_log.warning(f'Can not select row (id={id}): it has not been found')
     # добавление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: date | None = None):
+    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: dt.date | None = None):
         if not self.select(id):
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
             email = get_ciphered(str(email)) if email else email # type: ignore
@@ -103,7 +103,7 @@ class DataBase():
     
     # обновление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = None, reg_date: date | None = None):   # type: ignore
+    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = None, reg_date: dt.date | None = None):   # type: ignore
         old_client = self.select(id)
         if old_client:
             # если аргумент равен None, то присваивается значение из БД
@@ -140,7 +140,7 @@ class DataBase():
                     clients
                 """)
         results = self.__cur.fetchall()
-        unchip_clients_tuple = tuple(self.uncipher_client(ClientRow(*row)) for row in results)
+        unchip_clients_tuple = tuple(self.__uncipher_client(ClientRow(*row)) for row in results)
         return unchip_clients_tuple # type: ignore
     
     # поиск транзакции
@@ -165,7 +165,7 @@ class DataBase():
             client_id: int, 
             source_id: int, 
             amount: Decimal, 
-            date: datetime,
+            date: dt.datetime,
             desc: str | None = None, 
             ):
         
@@ -202,7 +202,7 @@ class DataBase():
     # декодирование pin и email из записи клиента
     @staticmethod
     @local_log.wrapper(DEBUG, DEBUG)
-    def uncipher_client(client: ClientRow) -> ClientRow:
+    def __uncipher_client(client: ClientRow) -> ClientRow:
         unciph_client = client._replace(
             pincode=get_unciphered(str(client.pincode)) if client.pincode else client.pincode,
             email = get_unciphered(client.email) if client.email else client.email
