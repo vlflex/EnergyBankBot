@@ -104,7 +104,8 @@ messages_dict: Dict[str, str | Template] = {
     'casino_nomoney':'А денег хватит?',
     'casino_input_bet':'Введите сумму ставки',
     'casino_no_bet':'Делаем ставки',
-    'casino_bet_accepted': 'Ставка принята',
+    'casino_bet_accepted': 'Ставка принята',\
+    'casino_bet_zero': 'Ошибка: нулевая ставка',
     'casino_noenough': Template('Недостаточно средств\nСтавка: <b>$bet</b>\nБаланс: <b>$balance</b>'),
     'casino_invalid_bet': 'Ошибка ввода ставки, введите число',
     'casino_dice_input': 'Выберите число от 1 до 6',

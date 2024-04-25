@@ -126,8 +126,13 @@ async def input_bet(message: Message, state: FSMContext, client: ClientRow):
 @router.message(CasinoStates.inputing_bet, MatchPatternFilter(compile(r'^[0-9]+$')))
 async def check_bet_input(message: Message, state: FSMContext, client: ClientRow):
     bet = int(message.text) # type: ignore
+    # нулевая ставка
+    if bet == 0:
+        await message.answer(messages_dict['casino_bet_zero'],  # type: ignore
+                            reply_markup=ckb.set_bet_kb(),
+                            )  
     # баланс больше ставки
-    if client.balance >= bet:
+    elif client.balance >= bet:
         await state.update_data(bet=bet)
         local_log.info(f'Player successfully set a bet {bet}\n{client}')
         await message.reply(messages_dict['casino_bet_accepted'], # type: ignore
