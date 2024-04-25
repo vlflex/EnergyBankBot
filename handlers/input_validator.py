@@ -19,7 +19,7 @@ from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from handlers.auth import login
 from handlers.pay import pay_attempt
-from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter
+from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter, PositiveAmountFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
@@ -209,7 +209,7 @@ async def pin_timer(message: Message, client: ClientRow, state: FSMContext, time
         await login(message=message, client=client, state=state)
         
 # ввод суммы для платежа: успех, совершение платежа
-@router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), HaveMoneyToPayFilter())   # type: ignore
+@router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), HaveMoneyToPayFilter(), PositiveAmountFilter())   # type: ignore
 async def pay_input_success(message: Message, client: ClientRow, state: FSMContext):
     await message.reply(messages_dict['pay_attempt'])   # type: ignore
     main_log.info(f'Go to try transfer: {message.text}\n{client}')
@@ -218,10 +218,13 @@ async def pay_input_success(message: Message, client: ClientRow, state: FSMConte
     await pay_attempt(message, client, state)
 
 # ввод суммы для платежа: недостаточно средств
-@router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'))   # type: ignore
+@router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), PositiveAmountFilter())   # type: ignore
 async def pay_input_not_enough_money(message: Message, client: ClientRow, state: FSMContext):
     local_log.info(f'Client have no enough money: {message.text}\n{client}')
     await message.reply(messages_dict['pay_input_nomoney']) # type: ignore
+
+# ввод нулевой или отрицательной суммы
+# @router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'))   # type: ignore
 
 # ввод суммы для платежа: неверный формат
 @router.message(InputStates.inputing_pay_amount)
