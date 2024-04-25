@@ -72,3 +72,15 @@ class HaveMoneyToPayFilter(BaseFilter):
             return False
         else:
             return pay_amount <= client.balance # type: ignore
+        
+# фильтр для проверки: сумма перевода - положительна
+@local_log.wrapper()
+class PositiveAmountFilter(BaseFilter):
+    async def __call__(self, message: Message):
+        pay_amount = None
+        try:
+            pay_amount = Decimal(message.text)  # type: ignore
+        except Exception:
+            return False
+        else:
+            return pay_amount > 0
