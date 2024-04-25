@@ -169,10 +169,18 @@ async def invalid_pincode_register(message: Message, client: ClientRow):
 # ввод pincode для авторизации (успешно)
 @router.message(InputStates.inputing_pin, MatchPinCodeFilter()) # type: ignore
 async def auth_success(message: Message, state: FSMContext, client: ClientRow):
-    with DataBase(config.db_name.get_secret_value()) as db:
-        db.update(id = client.id, authorized=True)
-    main_log.info(f'Successful authorization by\n {client}')
-    await cmd_start(message, client, state)
+    user_data = await state.get_data()
+    change_pin = user_data.get('new_pin', False)
+    if not change_pin:
+        with DataBase(config.db_name.get_secret_value()) as db:
+            db.update(id = client.id, authorized=True)
+        main_log.info(f'Successful authorization by\n {client}')
+        await cmd_start(message, client, state)
+    else:
+        await state.update_data(restore_pin=True)
+        await state.set_state(InputStates.inputing_pin)
+        main_log.info(f'Successful pin-code input by\n{client}')
+        await message.answer(messages_dict['pin_create'])   # type: ignore
     
 # восстановление pin через email
 @router.message(InputStates.waiting_input_pin, MagicData(F.client.reg_date), F.text == buttons_dict['email_restore'])
