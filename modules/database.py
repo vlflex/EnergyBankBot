@@ -23,6 +23,7 @@ class ClientRow(NamedTuple):
     authorized: bool
     balance: Decimal
     reg_date: dt.date | None
+    notifications: bool
     
 # класс для управлениями транзакциями
 class TransactionRow(NamedTuple):
@@ -88,23 +89,23 @@ class DataBase():
             local_log.warning(f'Can not select row (id={id}): it has not been found')
     # добавление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: dt.date | None = None):
+    def add(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = 0, reg_date: dt.date | None = None, notifications: bool = False):
         if not self.select(id):
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
             email = get_ciphered(str(email)) if email else email # type: ignore
             self.__cur.execute("""--sql
                             INSERT INTO 
-                                clients(id, pincode, email, authorized, balance, reg_date)
+                                clients(id, pincode, email, authorized, balance, reg_date, notifications)
                             VALUES 
-                                (%s, %s, %s, %s, %s, %s)
-                            """, (id, pincode, email, authorized, balance, reg_date))
+                                (%s, %s, %s, %s, %s, %s, %s)
+                            """, (id, pincode, email, authorized, balance, reg_date, notifications))
             self.__conn.commit()
         else:
             local_log.warning('Can not ADD database row, it has already located in the database')
     
     # обновление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = None, reg_date: dt.date | None = None):   # type: ignore
+    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = None, reg_date: dt.date | None = None, notifications: bool = False):   # type: ignore
         old_client = self.select(id)
         if old_client:
             # если аргумент равен None, то присваивается значение из БД
@@ -113,6 +114,7 @@ class DataBase():
             authorized = old_client.authorized if not authorized else authorized
             balance = old_client.balance if balance is None else balance    # type: ignore
             reg_date = old_client.reg_date if reg_date is None else reg_date
+            notifications = old_client.notifications if not notifications else notifications
             # шифрование пинкода и почты
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
             email = get_ciphered(str(email)) if email else email # type: ignore
@@ -125,9 +127,10 @@ class DataBase():
                                 email = %s,
                                 authorized = %s,
                                 balance = %s,
-                                reg_date = %s
+                                reg_date = %s,
+                                notifications = %s
                             WHERE 
-                                id = %s""", (pincode, email, authorized, balance, reg_date, id)) 
+                                id = %s""", (pincode, email, authorized, balance, reg_date, notifications, id)) 
             self.__conn.commit()
         else:
             local_log.warning('Can not UPDATE database, row has not found in the database')
