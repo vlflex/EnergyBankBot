@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import MagicData
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
@@ -169,10 +169,18 @@ async def invalid_pincode_register(message: Message, client: ClientRow):
 # ввод pincode для авторизации (успешно)
 @router.message(InputStates.inputing_pin, MatchPinCodeFilter()) # type: ignore
 async def auth_success(message: Message, state: FSMContext, client: ClientRow):
-    with DataBase(config.db_name.get_secret_value()) as db:
-        db.update(id = client.id, authorized=True)
-    main_log.info(f'Successful authorization by\n {client}')
-    await cmd_start(message, client, state)
+    user_data = await state.get_data()
+    change_pin = user_data.get('new_pin', False)
+    if not change_pin:
+        with DataBase(config.db_name.get_secret_value()) as db:
+            db.update(id = client.id, authorized=True)
+        main_log.info(f'Successful authorization by\n {client}')
+        await cmd_start(message, client, state)
+    else:
+        await state.update_data(restore_pin=True)
+        await state.set_state(InputStates.inputing_pin)
+        main_log.info(f'Successful pin-code input by\n{client}')
+        await message.answer(messages_dict['pin_create'])   # type: ignore
     
 # восстановление pin через email
 @router.message(InputStates.waiting_input_pin, MagicData(F.client.reg_date), F.text == buttons_dict['email_restore'])
@@ -210,12 +218,12 @@ async def pin_timer(message: Message, client: ClientRow, state: FSMContext, time
         
 # ввод суммы для платежа: успех, совершение платежа
 @router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), HaveMoneyToPayFilter(), PositiveAmountFilter())   # type: ignore
-async def pay_input_success(message: Message, client: ClientRow, state: FSMContext):
+async def pay_input_success(message: Message, client: ClientRow, state: FSMContext, bot: Bot):
     await message.reply(messages_dict['pay_attempt'])   # type: ignore
     main_log.info(f'Go to try transfer: {message.text}\n{client}')
     amount = Decimal(message.text)    # type: ignore
     await state.update_data(pay_amount=amount)
-    await pay_attempt(message, client, state)
+    await pay_attempt(message, client, state, bot)
 
 # ввод суммы для платежа: недостаточно средств
 @router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), PositiveAmountFilter())   # type: ignore

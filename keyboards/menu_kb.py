@@ -58,3 +58,22 @@ def history_slider_kb(id: int):
     builder.button(text='➡', callback_data=SliderCallback(action='right', client_id = id))
     markup = builder.as_markup()
     return markup
+
+# меню настроек
+def settings_menu_kb(notifications: bool):
+    return reply_kb_builder(
+        [
+            buttons_dict['sets_pincode'],
+            buttons_dict['sets_nots_on'] if notifications else buttons_dict['sets_nots_off'],
+            buttons_dict['sets_exit'],
+            buttons_dict['menu'],
+        ],
+    )
+# кнопка выйти и меню
+def menu_exit_kb():
+    return reply_kb_builder(
+        [
+            buttons_dict['sets_exit'],
+            buttons_dict['menu'],
+        ],
+    )
