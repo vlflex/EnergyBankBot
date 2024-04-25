@@ -84,7 +84,7 @@ async def handler_slider_callback(
         await callback.message.edit_reply_markup(reply_markup=mkb.history_slider_kb(client_id))   # type: ignore
         # отправка ответа
         if lim_slide:
-            await callback.answer(messages_dict['history_first_page']) if new_ind == 0 else await callback.answer(messages_dict['history_last_page']) # type: ignore
+            await callback.answer(messages_dict['history_first_page']) if (new_ind == 0) and (callback_data.action == 'left')  else await callback.answer(messages_dict['history_last_page']) # type: ignore
         else:
             await callback.answer() 
             
