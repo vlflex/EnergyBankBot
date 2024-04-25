@@ -242,7 +242,7 @@ class DataBase():
         for trans in trans_seq:
             formated_date =  trans.date.strftime(conf.TRANS_DATE_FORMAT)
             formated_amount = f'{trans.amount:,}'
-            table.add_row([trans.type, formated_amount, trans.source, formated_date, trans.desc])
+            table.add_row([formated_amount, formated_date, trans.desc])
         return str(table)
 
 class DataBaseException(Exception):

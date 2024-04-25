@@ -46,7 +46,7 @@ TRANS_DATE_FORMAT = "%d/%m/%Y %H:%M:%S"
 # формат даты в PSQL
 TRANS_DATE_SQL_FORMAT = "%Y-%m-%d %H:%M:%S.%f"
 # заголовки для таблицы транзакций
-TRANS_TABLE_HEADERS = ["Тип", 'Сумма', 'Источник', 'Дата', 'Описание']
+TRANS_TABLE_HEADERS = ['Сумма', '            Дата                  ', '           Описание           ']
 
 # словари с сообщениями
 messages_dict: Dict[str, str | Template] = {
@@ -89,12 +89,17 @@ messages_dict: Dict[str, str | Template] = {
     'pay_casino_dice_lose': 'Проигрыш в кости',
     'pay_casino_slot_win': 'Выигрыш в слоты',
     'pay_casino_slot_lose': 'Проигрыш в слоты',
+    'pay_transaction_sender': Template('Перевод на №$getter'),
+    'pay_transaction_getter': Template('Получение от №$sender'),
     'currency_choose': 'Выберите валюту',
     'currency_result': Template('Результат для <i>$other_name</i>:\n<b>$other_nominal</b> $other_currency\t=\t<b>$our_nominal</b> $our_currency'),
     'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',
     'currency_input': 'Введите название валюты из 3 букв (например "USD")',
     'currency_input_fail': 'Ошибка: данные о валюте не были найдены',
     'currency_rub': 'Ошибка: нельзя получить курс рубля в рублях',
+    'history_first_page': 'Текущая страница - первая',
+    'history_last_page': 'Текущая страница - последняя',
+    'history_empty': 'Вы ещё не совершили ни одной транзакции',
     'casino_greet':'Велкам ту казик',
     'casino_nomoney':'А денег хватит?',
     'casino_input_bet':'Введите сумму ставки',

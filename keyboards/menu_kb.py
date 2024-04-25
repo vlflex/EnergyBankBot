@@ -1,8 +1,8 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton, KeyboardButtonRequestUser
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
-from typing import Sequence, List
+from aiogram.types import KeyboardButtonRequestUser
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 from config import buttons_dict, currencies_dict
 from keyboards.sign import reply_kb_builder
+from aiogram.filters.callback_data import CallbackData
 
 # клавиатура для главного меню
 def main_menu_kb():
@@ -47,4 +47,14 @@ def choose_currency_kb():
         ],
         button_in_row=[4, 4, 4, 2])
     
+# формат данных для работы слайдера
+class SliderCallback(CallbackData, prefix="slider"):
+    action: str
+    client_id: int
 
+def history_slider_kb(id: int):
+    builder = InlineKeyboardBuilder()
+    builder.button(text='⬅', callback_data=SliderCallback(action='left', client_id = id))
+    builder.button(text='➡', callback_data=SliderCallback(action='right', client_id = id))
+    markup = builder.as_markup()
+    return markup
