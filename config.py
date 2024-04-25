@@ -88,13 +88,13 @@ messages_dict: Dict[str, str | Template] = {
     'pay_transaction_getter': Template('Получение от №$sender'),
     'currency_choose': 'Выберите валюту',
     'currency_result': Template('Результат для <i>$other_name</i>:\n<b>$other_nominal</b> $other_currency\t=\t<b>$our_nominal</b> $our_currency'),
-    'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',\
+    'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',
     'currency_input': 'Введите название валюты из 3 букв (например "USD")',
     'currency_input_fail': 'Ошибка: данные о валюте не были найдены',
     'currency_rub': 'Ошибка: нельзя получить курс рубля в рублях',
     'history_first_page': 'Текущая страница - первая',
     'history_last_page': 'Текущая страница - последняя',
-    'history_empty': 'Вы ещё не совершили ни одной транзакции',\
+    'history_empty': 'Вы ещё не совершили ни одной транзакции',
     'sets_updates': 'Настройки обновлены',
     'sets_choose': 'Выберите один из пунктов:',
     'sets_exit_warning': 'Вы действительно хотите выйти из аккаунта? Вам придется пройти авторизацию для доступа к аккаунту: /start',
