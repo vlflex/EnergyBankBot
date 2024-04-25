@@ -105,16 +105,16 @@ class DataBase():
     
     # обновление записи
     @local_log.wrapper(arg_level=INFO, res_level=DEBUG)
-    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool = False, balance: float = None, reg_date: dt.date | None = None, notifications: bool = False):   # type: ignore
+    def update(self, id: int, pincode: int | None = None, email: str | None = None, authorized: bool | None = None, balance: float = None, reg_date: dt.date | None = None, notifications: bool | None = None):   # type: ignore
         old_client = self.select(id)
         if old_client:
             # если аргумент равен None, то присваивается значение из БД
             pincode = old_client.pincode if pincode is None else pincode
             email = old_client.email if email is None else email
-            authorized = old_client.authorized if not authorized else authorized
+            authorized = old_client.authorized if authorized is None else bool(authorized)
             balance = old_client.balance if balance is None else balance    # type: ignore
             reg_date = old_client.reg_date if reg_date is None else reg_date
-            notifications = old_client.notifications if not notifications else notifications
+            notifications = old_client.notifications if notifications is None else bool(notifications)
             # шифрование пинкода и почты
             pincode = get_ciphered(str(pincode)) if pincode else pincode # type: ignore
             email = get_ciphered(str(email)) if email else email # type: ignore
