@@ -1,6 +1,6 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import Command, MagicData
-from aiogram.types import Message
+from aiogram.types import Message, chat
 from aiogram.fsm.context import FSMContext
 from aiogram.enums import ParseMode
 
@@ -54,7 +54,7 @@ async def check_target_user(message: Message, state: FSMContext, client: ClientR
         await state.set_state(InputStates.inputing_pay_amount)
         
 # совершение платежа 
-async def pay_attempt(message: Message, client: ClientRow, state: FSMContext):
+async def pay_attempt(message: Message, client: ClientRow, state: FSMContext, bot: Bot):
     await state.set_state(None)
     user_data = await state.get_data()
     pay_amount = user_data.get('pay_amount', None)
@@ -103,12 +103,21 @@ async def pay_attempt(message: Message, client: ClientRow, state: FSMContext):
     # проверка на успешность платежа
     if sender_row and getter_row:
         main_log.info(f'Successful transfer\nto {pay_getter}\nby {client}')
-        await message.answer(messages_dict['pay_input_success'], # type: ignore
+        # уведомление отправителю
+        await message.answer(messages_dict['pay_sender_success'], # type: ignore
                             reply_markup=mkb.to_menu_kb()
                             )    
+        # уведомление получателю
+        if pay_getter.notifications:
+            sender_username = f'@{message.from_user.username}'    # type: ignore
+            local_log.info(f'Send transfer notification\nto {pay_getter}')
+            await bot.send_message(
+                chat_id=pay_getter.id,
+                text=messages_dict['pay_getter_success'].substitute(amount = f'{pay_amount:,}', sender = sender_username), # type: ignore
+                parse_mode=ParseMode.HTML,
+            ) 
     else:
         local_log.error(f'Transfer update data error:\n{user_data}\n{client}')
         await message.answer(messages_dict['pay_input_fail'], # type: ignore
                             reply_markup=mkb.choose_pay_target_kb() 
                             )   
-

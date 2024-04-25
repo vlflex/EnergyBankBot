@@ -1,4 +1,4 @@
-from aiogram import Router, F
+from aiogram import Router, F, Bot
 from aiogram.filters import MagicData
 from aiogram.types import Message
 from aiogram.fsm.context import FSMContext
@@ -210,12 +210,12 @@ async def pin_timer(message: Message, client: ClientRow, state: FSMContext, time
         
 # ввод суммы для платежа: успех, совершение платежа
 @router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), HaveMoneyToPayFilter(), PositiveAmountFilter())   # type: ignore
-async def pay_input_success(message: Message, client: ClientRow, state: FSMContext):
+async def pay_input_success(message: Message, client: ClientRow, state: FSMContext, bot: Bot):
     await message.reply(messages_dict['pay_attempt'])   # type: ignore
     main_log.info(f'Go to try transfer: {message.text}\n{client}')
     amount = Decimal(message.text)    # type: ignore
     await state.update_data(pay_amount=amount)
-    await pay_attempt(message, client, state)
+    await pay_attempt(message, client, state, bot)
 
 # ввод суммы для платежа: недостаточно средств
 @router.message(InputStates.inputing_pay_amount, MatchPatternFilter(r'^\d+(\.|\,)?\d*$'), PositiveAmountFilter())   # type: ignore
