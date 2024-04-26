@@ -21,6 +21,7 @@ local_log = Logger('history', f'{conf.PATH}/log/history.log', level=conf.LOG_LEV
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
 
 router = Router()
+router.message.filter(MagicData(F.client.authorized.is_(True)))
 current_page: Dict[int, int] = {}
 
 # отправка сообщения
