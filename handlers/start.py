@@ -26,6 +26,10 @@ class InputStates(StatesGroup):
     waiting_send_code = State()
     waiting_input_pin = State()
     inputing_pay_amount = State()
+    inputing_calc_sum = State()
+    inputing_calc_rate = State()
+    inputing_calc_months = State()
+    inputing_calc_fill= State()
 
 # обработка /start для авторизованных пользователей
 @router.message(Command('start'), MagicData(F.client.authorized.is_(True)))
