@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import Command
+from aiogram.filters import Command, MagicData
 from aiogram.types import Message
 from aiogram.enums import ParseMode
 from aiogram.fsm.state import State, StatesGroup
@@ -19,6 +19,7 @@ local_log = Logger('currency', f'{conf.PATH}/log/currency.log', level=conf.LOG_L
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
 
 router = Router()
+router.message.filter(MagicData(F.client.authorized.is_(True)))
 
 class CurrencyStates(StatesGroup):
     inputing_currency = State()
