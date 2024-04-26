@@ -19,7 +19,7 @@ from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from handlers.auth import login
 from handlers.pay import pay_attempt
-from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter, PositiveAmountFilter
+from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter, PositiveAmountFilter, PositiveFloatFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
@@ -248,4 +248,17 @@ async def calc_sum_input_success(message: Message, client: ClientRow, state: FSM
 # ввод суммы для счета: ошибка ввода
 @router.message(InputStates.inputing_calc_sum)
 async def calc_sum_input_fail(message: Message, state:FSMContext):
-    await message.answer(messages_dict['calc_input_positive_fail']) # type: ignore
+    await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
+    
+# ввод суммы для счета: успех, переход к вводу ставки
+@router.message(InputStates.inputing_calc_rate, PositiveFloatFilter())   # type: ignore
+async def calc_rate_input_success(message: Message, client: ClientRow, state: FSMContext, float_value: Decimal):
+    local_log.info(f'Successful rate input: {float_value}\n{client}')
+    await state.set_state(InputStates.inputing_calc_months)
+    await state.update_data(account_rate=float_value)  # type: ignore
+    await message.answer(messages_dict['calc_input_months'])  # type: ignore
+    
+# ввод суммы для счета: ошибка ввода
+@router.message(InputStates.inputing_calc_rate)
+async def calc_rate_input_fail(message: Message, state:FSMContext):
+    await message.reply(messages_dict['calc_input_rate_fail']) # type: ignore

@@ -84,3 +84,16 @@ class PositiveAmountFilter(BaseFilter):
             return False
         else:
             return pay_amount > 0
+        
+# проверка: является ли строка числом с плавающей точкой
+@local_log.wrapper()
+class PositiveFloatFilter(BaseFilter):
+    async def __call__(self, message: Message):
+        float_num = None
+        try:
+            msg = message.text.replace(',', '.') # type: ignore
+            float_num = Decimal(msg)  # type: ignore
+        except Exception:
+            return False
+        else:
+            return {'float_value': float_num} if float_num > 0 else False
