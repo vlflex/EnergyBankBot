@@ -237,3 +237,16 @@ async def pay_input_not_enough_money(message: Message, client: ClientRow, state:
 async def pay_input_invalid(message: Message, client: ClientRow):
     local_log.info(f'Client invalid input: {message.text}\n{client}')
     await message.reply(messages_dict['pay_input_invalid']) # type: ignore
+    
+# ввод суммы для счета: успех, переход к вводу ставки
+@router.message(InputStates.inputing_calc_sum, MatchPatternFilter(r'^[1-9]\d*$'), PositiveAmountFilter())   # type: ignore
+async def calc_sum_input_success(message: Message, client: ClientRow, state: FSMContext):
+    local_log.info(f'Successful sum input\n{client}')
+    await state.set_state(InputStates.inputing_calc_rate)
+    await state.update_data(account_sum=Decimal(message.text))  # type: ignore
+    await message.answer(messages_dict['calc_input_rate'])  # type: ignore
+    
+# ввод суммы для счета: ошибка ввода
+@router.message(InputStates.inputing_calc_sum)
+async def calc_sum_input_fail(message: Message, state:FSMContext):
+    await message.answer(messages_dict['calc_input_positive_fail']) # type: ignore

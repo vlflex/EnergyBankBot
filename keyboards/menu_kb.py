@@ -77,3 +77,12 @@ def menu_exit_kb():
             buttons_dict['menu'],
         ],
     )
+    
+# выбор типа счета для рассчета
+def credit_deposite_kb():
+    return reply_kb_builder(
+        [
+            buttons_dict['calc_credit'],
+            buttons_dict['calc_deposite'],
+        ],
+    )
