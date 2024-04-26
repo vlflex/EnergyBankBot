@@ -1,5 +1,5 @@
 from aiogram import Router, F
-from aiogram.filters import Command
+from aiogram.filters import Command, MagicData
 from aiogram.types import Message
 from aiogram.enums import ParseMode
 from aiogram.fsm.state import State, StatesGroup
