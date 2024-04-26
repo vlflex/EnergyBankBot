@@ -248,10 +248,11 @@ async def calc_sum_input_success(message: Message, client: ClientRow, state: FSM
     
 # ввод суммы для счета: ошибка ввода
 @router.message(InputStates.inputing_calc_sum)
-async def calc_sum_input_fail(message: Message, state:FSMContext):
+async def calc_sum_input_fail(message: Message, state:FSMContext, client: ClientRow):
     await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
+    local_log.info(f'Fail calc sum input\n{client}')
     
-# ввод суммы для счета: успех, переход к вводу ставки
+# ввод ставки для счета: успех, переход к вводу ставки
 @router.message(InputStates.inputing_calc_rate, PositiveFloatFilter())   # type: ignore
 async def calc_rate_input_success(message: Message, client: ClientRow, state: FSMContext, float_value: Decimal):
     local_log.info(f'Successful rate input: {float_value}\n{client}')
@@ -259,7 +260,23 @@ async def calc_rate_input_success(message: Message, client: ClientRow, state: FS
     await state.update_data(account_rate=float_value)  # type: ignore
     await message.answer(messages_dict['calc_input_months'])  # type: ignore
     
-# ввод суммы для счета: ошибка ввода
+# ввод ставки для счета: ошибка ввода
 @router.message(InputStates.inputing_calc_rate)
-async def calc_rate_input_fail(message: Message, state:FSMContext):
+async def calc_rate_input_fail(message: Message, state:FSMContext, client: ClientRow):
     await message.reply(messages_dict['calc_input_rate_fail']) # type: ignore
+    local_log.info(f'Fail calc rate input\n{client}')
+    
+# ввод кол-ва месяцев для счета: успех, переход к вводу ставки
+@router.message(InputStates.inputing_calc_months, PositiveAmountFilter())   # type: ignore
+async def calc_months_input_success(message: Message, client: ClientRow, state: FSMContext):
+    local_log.info(f'Successful months input\n{client}')
+    await state.set_state(InputStates.inputing_calc_fill)
+    await state.update_data(account_months=int(message.text))  # type: ignore
+    await message.answer(messages_dict['calc_input_fill'])  # type: ignore
+    
+# ввод кол-ва месяцев для счета: ошибка ввода
+@router.message(InputStates.inputing_calc_months)
+async def calc_months_input_fail(message: Message, state:FSMContext, client: ClientRow):
+    await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
+    local_log.info(f'Fail calc months input\n{client}')
+    
