@@ -95,6 +95,7 @@ messages_dict: Dict[str, str | Template] = {
     'currency_choose': 'Выберите валюту',
     'currency_result': Template('Результат для <i>$other_name</i>:\n<b>$other_nominal</b> $other_currency\t=\t<b>$our_nominal</b> $our_currency'),
     'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',
+    'currency_error': 'Ошибка получения информации, пожалуйста, повторите запрос',
     'currency_input': 'Введите название валюты из 3 букв (например "USD")',
     'currency_input_fail': 'Ошибка: данные о валюте не были найдены',
     'currency_rub': 'Ошибка: нельзя получить курс рубля в рублях',
