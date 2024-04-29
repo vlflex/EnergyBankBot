@@ -86,3 +86,12 @@ def credit_deposite_kb():
             buttons_dict['calc_deposite'],
         ],
     )
+    
+# кнопки для рассчета кредита
+def months_amount_kb():
+    return reply_kb_builder(
+        [
+            buttons_dict['calc_months'],
+            buttons_dict['calc_fill'],
+        ],
+    )
