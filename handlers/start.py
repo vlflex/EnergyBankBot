@@ -30,6 +30,8 @@ class InputStates(StatesGroup):
     inputing_calc_rate = State()
     inputing_calc_months = State()
     inputing_calc_fill= State()
+    inputing_deposite_goal = State()
+    choosing_data = State()
 
 # обработка /start для авторизованных пользователей
 @router.message(Command('start'), MagicData(F.client.authorized.is_(True)))

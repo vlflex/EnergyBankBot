@@ -37,3 +37,11 @@ async def account_input(message: Message, state: FSMContext, client: ClientRow):
     local_log.info(f'Start input account\n{client}')
     await state.set_state(InputStates.inputing_calc_sum)
     
+# выбор искомых данных
+@router.message(InputStates.choosing_data)
+async def choose_data(message: Message, state: FSMContext, client: ClientRow):
+    await message.answer(messages_dict['calc_choose_data'],# type: ignore
+                        reply_markup=mkb.months_amount_kb(),
+                        parse_mode=ParseMode.HTML,
+                        )  
+    local_log.info(f'Choose data\n{client}')

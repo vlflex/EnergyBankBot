@@ -19,6 +19,7 @@ from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from handlers.auth import login
 from handlers.pay import pay_attempt
+from handlers.calculator import choose_data
 from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter, PositiveAmountFilter, PositiveFloatFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
@@ -251,13 +252,29 @@ async def calc_sum_input_fail(message: Message, state:FSMContext, client: Client
     await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
     local_log.info(f'Fail calc sum input\n{client}')
     
-# ввод ставки для счета: успех, переход к вводу ставки
+# ввод ставки для счета: успех, переход к выбору искомых данных
 @router.message(InputStates.inputing_calc_rate, PositiveFloatFilter())   # type: ignore
 async def calc_rate_input_success(message: Message, client: ClientRow, state: FSMContext, float_value: Decimal):
     local_log.info(f'Successful rate input: {float_value}\n{client}')
-    await state.set_state(InputStates.inputing_calc_months)
     await state.update_data(account_rate=float_value)  # type: ignore
-    await message.answer(messages_dict['calc_input_months'])  # type: ignore
+    user_data = await state.get_data()
+    account_type = user_data.get('account', None)
+    account_type = account_type.capitalize() if account_type else account_type
+    assert account_type is not None
+    # ввод искомых данных для кредита
+    if account_type == buttons_dict['calc_credit']:
+        await state.set_state(InputStates.choosing_data)
+        await choose_data(message, state, client)
+        local_log.info(f'Client transfer to choose data\nuser data: {user_data}\n{client}')
+    # ввод цели по вкладу
+    elif account_type == buttons_dict['calc_deposite']:
+        await state.set_state(InputStates.inputing_deposite_goal)
+        await message.answer(messages_dict['calc_input_goal'])  # type: ignore
+        local_log.info(f'Client transfer to input deposite goal\nuser data: {user_data}\n{client}')
+    # ошибка типа аккаунта
+    else:
+        local_log.error(f'Unexpected account type\nuser data: {user_data}\n{client}')
+
     
 # ввод ставки для счета: ошибка ввода
 @router.message(InputStates.inputing_calc_rate)
