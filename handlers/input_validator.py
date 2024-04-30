@@ -20,7 +20,7 @@ from handlers.start import InputStates, cmd_start
 from handlers.auth import login
 from handlers.pay import pay_attempt
 from handlers.calculator import choose_data
-from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter, PositiveAmountFilter, PositiveFloatFilter
+from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter, PositiveAmountFilter, PositiveFloatFilter, GoalGreaterSumFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
 main_log = Logger('main', f'{conf.PATH}/log/main.log', level=conf.LOG_LEVEL)
@@ -275,14 +275,36 @@ async def calc_rate_input_success(message: Message, client: ClientRow, state: FS
     else:
         local_log.error(f'Unexpected account type\nuser data: {user_data}\n{client}')
 
-    
 # ввод ставки для счета: ошибка ввода
 @router.message(InputStates.inputing_calc_rate)
 async def calc_rate_input_fail(message: Message, state:FSMContext, client: ClientRow):
     await message.reply(messages_dict['calc_input_rate_fail']) # type: ignore
     local_log.info(f'Fail calc rate input\n{client}')
     
-# ввод кол-ва месяцев для счета: успех, переход к вводу ставки
+# ввод цели по вкладу: успех
+@router.message(InputStates.inputing_deposite_goal, PositiveAmountFilter(), GoalGreaterSumFilter())   # type: ignore
+async def calc_goal_input_success(message: Message, client: ClientRow, state: FSMContext):
+    local_log.info(f'Successful goal input\n{client}')
+    await state.update_data(account_goal=Decimal(message.text)) # type: ignore
+    user_data = await state.get_data()
+    await state.set_state(InputStates.choosing_data)
+    await choose_data(message, state, client)
+    local_log.info(f'Client transfer to choose data\nuser data: {user_data}\n{client}')
+
+# ввод цели по вкладу: цель меньше суммы счета
+@router.message(InputStates.inputing_deposite_goal, PositiveAmountFilter())
+async def calc_goal_input_greater(message: Message, state:FSMContext, client: ClientRow):
+    user_data = await state.get_data()
+    user_sum = user_data.get('account_sum', None)
+    await message.reply(messages_dict['calc_input_goal_greater_sum'].substitute(sum=user_sum)) # type: ignore
+    local_log.info(f'Fail calc goal input: goal less then sum:{user_sum}\n{client}')
+
+# ввод цели по вкладу: ошибка ввода
+@router.message(InputStates.inputing_deposite_goal)
+async def calc_goal_input_fail(message: Message, state:FSMContext, client: ClientRow):
+    await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
+    local_log.info(f'Fail calc goal input\n{client}')
+
 @router.message(InputStates.inputing_calc_months, PositiveAmountFilter())   # type: ignore
 async def calc_months_input_success(message: Message, client: ClientRow, state: FSMContext):
     local_log.info(f'Successful months input\n{client}')
