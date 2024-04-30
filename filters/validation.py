@@ -97,3 +97,16 @@ class PositiveFloatFilter(BaseFilter):
             return False
         else:
             return {'float_value': float_num} if float_num > 0 else False
+        
+@local_log.wrapper()
+class GoalGreaterSumFilter(BaseFilter):
+    async def __call__(self, message: Message, state: FSMContext):
+        user_data = await state.get_data()
+        user_sum = user_data.get('account_sum', None)
+        assert user_sum is not None
+        try:
+            goal_amount = int(message.text) # type: ignore
+        except Exception:
+            return False
+        else:
+            return goal_amount > user_sum
