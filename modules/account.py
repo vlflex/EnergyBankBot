@@ -68,11 +68,11 @@ class CreditAccount(Account):
     # получение мин. суммы пополнения для погашения кредина за months месяцев
     def get_fill_to_paid(self, months: int):
         months = int(months)
-        fill = self.sum / months - 1
+        fill = int(self.sum / months - 1)
         # создание временного объекта для симуляции ежемесячной платы
         tempAccount = copy(self)
         while (not tempAccount.is_paid()):
-            fill += 1
+            fill += 10
             tempAccount = copy(self)
             tempAccount.fill = fill
             for i in range(months):
@@ -126,11 +126,11 @@ class DepositAccount(Account):
 
     # получение мин. суммы пополнения для достижения цели
     def get_fill_to_achieve(self, months: int):
-        fill = (self.__goal - self.sum) / (months + 2)
+        fill = int((self.__goal - self.sum) / (months + 2))
         # создание временного объекта для симуляции ежемесячной платы
         tempAccount = copy(self)
         while (not tempAccount.is_achieved()):
-            fill += 1
+            fill += 10
             tempAccount = copy(self)
             tempAccount.fill = fill
             for i in range(months):
