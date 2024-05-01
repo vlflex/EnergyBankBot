@@ -1,6 +1,0 @@
-CREATE TABLE Clients(
-    id VARCHAR(20) NOT NULL PRIMARY KEY,
-    pincode VARCHAR(50),
-    email VARCHAR(50),
-    authorized BOOLEAN DEFAULT FALSE
-)
