@@ -232,6 +232,7 @@ async def pay_input_not_enough_money(message: Message, client: ClientRow, state:
     local_log.info(f'Client have no enough money: {message.text}\n{client}')
     await message.reply(messages_dict['pay_input_nomoney']) # type: ignore
 
+
 # ввод суммы для платежа: неверный формат
 @router.message(InputStates.inputing_pay_amount)
 async def pay_input_invalid(message: Message, client: ClientRow):
