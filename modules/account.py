@@ -3,13 +3,9 @@ from copy import copy
 class Account:
     # инициализация объекта
     def __init__(self, sum: float, rate: float, fill: float = 0):
-        try:
-            self.__sum = float(sum)
-            self.__rate = float(rate)
-            self.__fill = float(fill)
-        except ValueError as ve:
-            print(ve)
-            
+        self.__sum = sum
+        self.__rate = rate
+        self.__fill = fill
 
     # свойство суммы счёта
     @property
@@ -19,12 +15,8 @@ class Account:
     # обновление суммы
     @sum.setter
     def sum(self, value: float):
-        try:
-            self.__sum = float(value)
-        except ValueError as ve:
-            print(ve)
-            
-
+        self.__sum = float(value)
+        
     # свойство ставки счёта
     @property
     def rate(self):
@@ -32,12 +24,8 @@ class Account:
 
     @rate.setter
     def rate(self, value: float):
-        try:
-            self.__rate = float(value)
-        except ValueError as ve:
-            print(ve)
-            
-
+        self.__rate = float(value)
+        
     # свойство ставка в виде коэффициента (ежемесячный множитель)
     @property
     def rate_coef(self):
@@ -51,10 +39,7 @@ class Account:
 
     @fill.setter
     def fill(self, value):
-        try:
-            self.__fill = float(value)
-        except ValueError as ve:
-            print(ve)
+        self.__fill = float(value)
 
     # пополнение счёта на сумму пополнения
     def fill_account(self):
@@ -78,31 +63,23 @@ class CreditAccount(Account):
 
     # проверка: оплачен ли кредитный счёт
     def is_paid(self):
-        if (self.sum <= 0):
-            return True
-        else:
-            return False
+        return self.sum <= 0
 
     # получение мин. суммы пополнения для погашения кредина за months месяцев
     def get_fill_to_paid(self, months: int):
-
-        try:
-            months = int(months)
-            fill = self.sum / months - 1
-        except ValueError as ve:
-            print(ve)
-        else:
+        months = int(months)
+        fill = int(self.sum / months - 1)
+        # создание временного объекта для симуляции ежемесячной платы
+        tempAccount = copy(self)
+        while (not tempAccount.is_paid()):
+            fill += 10
             tempAccount = copy(self)
-            # создание временного объекта для симуляции ежемесячной платы
-
-            while (not tempAccount.is_paid()):
-                fill += 1
-                tempAccount = copy(self)
-                for i in range(months):
-                    tempAccount.interest_accrual()
-                    tempAccount.fill_account()
-            else:
-                return fill
+            tempAccount.fill = fill
+            for i in range(months):
+                tempAccount.interest_accrual()
+                tempAccount.fill_account()
+        else:
+            return fill
 
     # получения кол-ва месяцев для выплаты кредита (при текущем пополнении)
     def get_months_to_paid(self):
@@ -131,11 +108,7 @@ class DepositAccount(Account):
     # инициализация объекта
     def __init__(self, sum: float, rate: float, fill: float, goal: float):
         Account.__init__(self, sum, rate, fill)
-
-        try:
-            self.__goal = float(goal)
-        except ValueError as ve:
-            print(ve)
+        self.__goal = float(goal)
 
     # свойство цели по вкладу
     @property
@@ -145,36 +118,26 @@ class DepositAccount(Account):
     @goal.setter
     # обновление цели по вкладу
     def goal(self, value: float):
-        try:
-            self.__goal = float(value)
-        except ValueError as ve:
-            print(ve)
+        self.__goal = float(value)
 
     # проверка: была ли достигнута цель (goal)
     def is_achieved(self):
-        if (self.sum >= self.__goal):
-            return True
-        else:
-            return False
+        return self.sum >= self.__goal
 
     # получение мин. суммы пополнения для достижения цели
     def get_fill_to_achieve(self, months: int):
-        try:
-            months = int(months)
-            fill = (self.__goal - self.sum) / (months + 2)
-        except ValueError as ve:
-            print(ve)
-        else:
-            # создание временного объекта для симуляции ежемесячной платы
+        fill = int((self.__goal - self.sum) / (months + 2))
+        # создание временного объекта для симуляции ежемесячной платы
+        tempAccount = copy(self)
+        while (not tempAccount.is_achieved()):
+            fill += 10
             tempAccount = copy(self)
-            while (not tempAccount.is_achieved()):
-                fill += 1
-                tempAccount = copy(self)
-                for i in range(months):
-                    tempAccount.interest_accrual()
-                    tempAccount.fill_account()
-            else:
-                return fill
+            tempAccount.fill = fill
+            for i in range(months):
+                tempAccount.interest_accrual()
+                tempAccount.fill_account()
+        else:
+            return fill
 
     # получения кол-ва месяцев для достижения цели (при текущем пополнении)
     def get_months_to_achieve(self):
@@ -202,4 +165,3 @@ class DepositAccount(Account):
     # стандартное сообщение при выводе
     def __repr__(self):
         return f'{__class__.__name__}({self.sum}, {self.rate}, {self.fill}, {self.goal})'
-    
