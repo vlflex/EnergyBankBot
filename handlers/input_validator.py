@@ -19,7 +19,7 @@ from keyboards import sign
 from handlers.start import InputStates, cmd_start
 from handlers.auth import login
 from handlers.pay import pay_attempt
-from handlers.calculator import choose_data
+from handlers.calculator import choose_data, calculate_data
 from filters.validation import MatchPatternFilter, MatchCodeFilter, TimerFilter, MatchPinCodeFilter, RestoringPinFilter, HaveMoneyToPayFilter, PositiveAmountFilter, PositiveFloatFilter, GoalGreaterSumFilter
 
 local_log = Logger('input_validator', f'{conf.PATH}/log/input_validator.log', level=conf.LOG_LEVEL)
@@ -306,12 +306,14 @@ async def calc_goal_input_fail(message: Message, state:FSMContext, client: Clien
     await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
     local_log.info(f'Fail calc goal input\n{client}')
 
+# ввод кол-ва месяцев для счета: успех
 @router.message(InputStates.inputing_calc_months, PositiveAmountFilter())   # type: ignore
 async def calc_months_input_success(message: Message, client: ClientRow, state: FSMContext):
     local_log.info(f'Successful months input\n{client}')
     await state.set_state(InputStates.inputing_calc_fill)
     await state.update_data(account_months=int(message.text))  # type: ignore
-    await message.answer(messages_dict['calc_input_fill'])  # type: ignore
+    await state.set_state(state=None)
+    await calculate_data(message, state, client)
     
 # ввод кол-ва месяцев для счета: ошибка ввода
 @router.message(InputStates.inputing_calc_months)
@@ -319,3 +321,16 @@ async def calc_months_input_fail(message: Message, state:FSMContext, client: Cli
     await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
     local_log.info(f'Fail calc months input\n{client}')
     
+# ввод суммы для пополнения счета: успех
+@router.message(InputStates.inputing_calc_fill, PositiveAmountFilter())   # type: ignore
+async def calc_fill_input_success(message: Message, client: ClientRow, state: FSMContext):
+    local_log.info(f'Successful fill input\n{client}')
+    await state.update_data(account_fill=Decimal(message.text))  # type: ignore
+    await state.set_state(state=None)
+    await calculate_data(message, state, client)
+
+# ввод суммы для пополнения счета: ошибка ввода
+@router.message(InputStates.inputing_calc_fill)
+async def calc_fill_input_fail(message: Message, state:FSMContext, client: ClientRow):
+    await message.reply(messages_dict['calc_input_positive_fail']) # type: ignore
+    local_log.info(f'Fail calc fill input\n{client}')
