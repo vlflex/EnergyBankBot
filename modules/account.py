@@ -72,7 +72,7 @@ class CreditAccount(Account):
         # создание временного объекта для симуляции ежемесячной платы
         tempAccount = copy(self)
         while (not tempAccount.is_paid()):
-            fill += 10
+            fill += self.sum // 100
             tempAccount = copy(self)
             tempAccount.fill = fill
             for i in range(months):
@@ -93,6 +93,10 @@ class CreditAccount(Account):
             for i in range(months):
                 tempAccount.interest_accrual()
                 tempAccount.fill_account()
+                
+            # рассчет невозможен
+            if tempAccount.sum > self.sum:
+                raise ValueError
         else:
             return months
 
@@ -130,7 +134,7 @@ class DepositAccount(Account):
         # создание временного объекта для симуляции ежемесячной платы
         tempAccount = copy(self)
         while (not tempAccount.is_achieved()):
-            fill += 10
+            fill += self.sum // 100
             tempAccount = copy(self)
             tempAccount.fill = fill
             for i in range(months):
