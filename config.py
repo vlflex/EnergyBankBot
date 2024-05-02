@@ -141,7 +141,7 @@ messages_dict: Dict[str, str | Template] = {
     'casino_bet_zero': 'Ошибка: нулевая ставка',
     'casino_noenough': Template('Недостаточно средств\nСтавка: <b>$bet</b>\nБаланс: <b>$balance</b>'),
     'casino_invalid_bet': 'Ошибка ввода ставки, введите число',
-    'casino_dice_input': 'Выберите число от 1 до 6',
+    'casino_dice_input': Template(f'Выберите число от 1 до 6 или чет/нечет\nКоэффициенты:\n<b>x$num</b> - для числа\n<b>x$even</b> - для чет/нечет'),
     'casino_dice_fail_input': 'Ошибка ввода: введите число от 1 до 6',
     'casino_choice_accepted': 'Выбор сохранён',
     'casino_win':Template('Выигрыш: $win\nСтавка $bet'),

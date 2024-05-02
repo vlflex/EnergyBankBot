@@ -90,7 +90,11 @@ async def play_dice(message: Message, state: FSMContext, client: ClientRow):
 async def start_input_dice(message: Message, state: FSMContext, client: ClientRow):
     player_data = await state.get_data()
     local_log.info(f'Input dice num\n{client}\n{player_data["bet"]}')
-    await message.answer(messages_dict['casino_dice_input'], reply_markup=ckb.choose_dice())    # type: ignore
+    await message.answer(
+                        messages_dict['casino_dice_input'].substitute(num=DICE_DIV_COEF, even = DICE_ONE_COEF), # type: ignore
+                        reply_markup=ckb.choose_dice(),  
+                        parse_mode=ParseMode.HTML,
+                        )    
     await state.set_state(CasinoStates.inputing_dice_num)
     
 # ввод числа для кости (удачно)
