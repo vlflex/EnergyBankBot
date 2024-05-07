@@ -13,8 +13,9 @@ def main_menu_kb():
         buttons_dict['calculator'],
         buttons_dict['settings'],
         buttons_dict['currency'],
+        buttons_dict['help'],
     ],
-        button_in_row=3,               
+        button_in_row=[3, 3, 1],          
     )
     
 # переход в меню
