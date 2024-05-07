@@ -1,5 +1,6 @@
-aiogram==3.5.0
+aiogram==3.6.0
 cryptography==42.0.5
+fuzzywuzzy==0.18.0
 pandas==2.2.2
 prettytable==3.10.0
 psycopg2==2.9.9
